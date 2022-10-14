@@ -4,7 +4,6 @@
 
 #include <GL/glew.h>
 
-#include <string>
 #include <vector>
 #include <string_view>
 #include <unordered_map>
@@ -19,7 +18,7 @@ public:
     ~ShaderProgram();
 
     bool addShader(GLenum type, std::string_view path);
-    bool addShaderSource(GLenum type, const std::string &source);
+    bool addShaderSource(GLenum type, std::string_view source);
     bool link();
     const std::string &log() const { return m_log; }
 
@@ -47,9 +46,8 @@ public:
 
 private:
     void initialize();
-    bool compileAndAttachShader(GLenum type, const std::string &source);
+    bool compileAndAttachShader(GLenum type, std::string_view source);
 
     GLuint m_id = 0;
     std::string m_log;
-    std::unordered_map<GLenum, std::string> m_shaderSources;
 };

@@ -35,18 +35,18 @@ bool ShaderProgram::addShader(GLenum type, std::string_view filename)
     return addShaderSource(type, std::string(source->begin(), source->end()));
 }
 
-bool ShaderProgram::addShaderSource(GLenum type, const std::string &source)
+bool ShaderProgram::addShaderSource(GLenum type, std::string_view source)
 {
-    m_shaderSources[type] = source;
     return compileAndAttachShader(type, source);
 }
 
-bool ShaderProgram::compileAndAttachShader(GLenum type, const std::string &source)
+bool ShaderProgram::compileAndAttachShader(GLenum type, std::string_view source)
 {
     const auto shader = glCreateShader(type);
 
-    const auto *s = source.c_str();
-    glShaderSource(shader, 1, &s, nullptr);
+    std::array sources = {source.data()};
+    const std::array lengths = {static_cast<GLint>(source.size())};
+    glShaderSource(shader, 1, sources.data(), lengths.data());
     glCompileShader(shader);
 
     GLint status;
@@ -54,14 +54,12 @@ bool ShaderProgram::compileAndAttachShader(GLenum type, const std::string &sourc
     if (status == GL_FALSE)
     {
         m_log.clear();
-        GLint logLength = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
-        if (logLength > 1)
+        GLint length = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+        if (length > 1)
         {
-            auto buffer = std::make_unique<char[]>(logLength);
-            GLsizei dummy;
-            glGetShaderInfoLog(shader, logLength, &dummy, buffer.get());
-            m_log = buffer.get();
+            m_log.resize(length);
+            glGetShaderInfoLog(shader, length, nullptr, m_log.data());
         }
         return false;
     }
@@ -80,14 +78,12 @@ bool ShaderProgram::link()
     if (status == GL_FALSE)
     {
         m_log.clear();
-        GLint logLength;
-        glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &logLength);
-        if (logLength > 1)
+        GLint length;
+        glGetProgramiv(m_id, GL_INFO_LOG_LENGTH, &length);
+        if (length > 1)
         {
-            auto buffer = std::make_unique<char[]>(logLength);
-            GLsizei dummy;
-            glGetProgramInfoLog(m_id, logLength, &dummy, buffer.get());
-            m_log = buffer.get();
+            m_log.resize(length);
+            glGetProgramInfoLog(m_id, length, nullptr, m_log.data());
         }
         return false;
     }

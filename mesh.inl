@@ -90,12 +90,12 @@ void Mesh<VertexT>::render(GLenum primitive) const
 {
     m_buffer->bind();
 
-    ar::forEachMember(VertexT{}, [index = 0, offset = 0](const auto &m) mutable {
+    ar::forEachMember(VertexT{}, [index = 0, offset = static_cast<std::byte *>(nullptr)](const auto &m) mutable {
         using Type = std::decay_t<decltype(m)>;
         glEnableVertexAttribArray(index);
         const auto size = detail::GLSize<Type>::value;
         const auto type = detail::GLType<Type>::value;
-        glVertexAttribPointer(index, size, type, GL_FALSE, sizeof(VertexT), reinterpret_cast<const void *>(offset));
+        glVertexAttribPointer(index, size, type, GL_FALSE, sizeof(VertexT), offset);
         ++index;
         offset += sizeof(m);
     });
