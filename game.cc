@@ -65,11 +65,11 @@ void main(void)
 
         if (!m_program->addShaderSource(GL_VERTEX_SHADER, vs))
         {
-            log("Failed to add vertex shader for vertex shader: %s\n", m_program->log().c_str());
+            log("Failed to add vertex shader: %s\n", m_program->log().c_str());
         }
         if (!m_program->addShaderSource(GL_FRAGMENT_SHADER, fs))
         {
-            log("Failed to add fragment shader for fragment shader %s: %s\n", m_program->log().c_str());
+            log("Failed to add fragment shader: %s\n", m_program->log().c_str());
         }
         m_program->bindAttributeLocation(0, "position");
         m_program->bindAttributeLocation(1, "color");
