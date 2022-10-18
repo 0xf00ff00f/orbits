@@ -13,10 +13,25 @@ GLenum toGLTarget(Buffer::Type type)
         return GL_ELEMENT_ARRAY_BUFFER;
     }
 }
+
+GLenum toGLUsage(Buffer::Usage usage)
+{
+    switch (usage)
+    {
+    case Buffer::Usage::StaticDraw:
+    default:
+        return GL_STATIC_DRAW;
+    case Buffer::Usage::DynamicDraw:
+        return GL_DYNAMIC_DRAW;
+    case Buffer::Usage::StreamDraw:
+        return GL_STREAM_DRAW;
+    }
+}
 }
 
-Buffer::Buffer(Type type)
-    : m_type(type)
+Buffer::Buffer(Type type, Usage usage)
+    : m_type(toGLTarget(type))
+    , m_usage(toGLUsage(usage))
 {
     glGenBuffers(1, &m_handle);
 }
@@ -28,19 +43,15 @@ Buffer::~Buffer()
 
 void Buffer::bind() const
 {
-    glBindBuffer(toGLTarget(m_type), m_handle);
+    glBindBuffer(m_type, m_handle);
 }
 
-void Buffer::setData(std::span<std::byte> data) const
+void Buffer::allocate(std::span<const std::byte> data) const
 {
-    const auto target = toGLTarget(m_type);
-    glBindBuffer(target, m_handle);
-    glBufferData(target, data.size(), data.data(), GL_STATIC_DRAW);
+    glBufferData(m_type, data.size(), data.data(), m_usage);
 }
 
-void Buffer::setSubData(std::size_t offset, std::span<std::byte> data) const
+void Buffer::write(std::size_t offset, std::span<const std::byte> data) const
 {
-    const auto target = toGLTarget(m_type);
-    glBindBuffer(target, m_handle);
-    glBufferSubData(target, offset, data.size(), data.data());
+    glBufferSubData(m_type, offset, data.size(), data.data());
 }

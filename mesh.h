@@ -14,7 +14,7 @@ public:
     Mesh();
     ~Mesh();
 
-    void setData(std::span<VertexT> data);
+    void setData(std::span<const VertexT> data);
     void render(GLenum primitive) const;
 
 private:

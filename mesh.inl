@@ -1,5 +1,3 @@
-#pragma once
-
 #include <concepts>
 
 #include <glm/glm.hpp>
@@ -71,7 +69,7 @@ struct GLType<glm::vec<L, T, Q>>
 
 template<typename VertexT>
 Mesh<VertexT>::Mesh()
-    : m_buffer(new Buffer(Buffer::Type::Vertex))
+    : m_buffer(new Buffer(Buffer::Type::Vertex, Buffer::Usage::StaticDraw))
 {
 }
 
@@ -79,10 +77,11 @@ template<typename VertexT>
 Mesh<VertexT>::~Mesh() = default;
 
 template<typename VertexT>
-void Mesh<VertexT>::setData(std::span<VertexT> data)
+void Mesh<VertexT>::setData(std::span<const VertexT> data)
 {
     m_vertexCount = data.size();
-    m_buffer->setData(std::span(reinterpret_cast<std::byte *>(data.data()), data.size() * sizeof(VertexT)));
+    m_buffer->bind();
+    m_buffer->allocate(std::as_bytes(data));
 }
 
 template<typename VertexT>
@@ -90,7 +89,7 @@ void Mesh<VertexT>::render(GLenum primitive) const
 {
     m_buffer->bind();
 
-    ar::forEachMember(VertexT{}, [index = 0, offset = static_cast<std::byte *>(nullptr)](const auto &m) mutable {
+    ar::forEachMember(VertexT{}, [index = 0, offset = static_cast<const std::byte *>(nullptr)](const auto &m) mutable {
         using Type = std::decay_t<decltype(m)>;
         glEnableVertexAttribArray(index);
         const auto size = detail::GLSize<Type>::value;
