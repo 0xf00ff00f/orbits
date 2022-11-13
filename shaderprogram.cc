@@ -32,7 +32,9 @@ bool ShaderProgram::addShader(GLenum type, std::string_view filename)
         m_log = ss.str();
         return false;
     }
-    return addShaderSource(type, std::string(source->begin(), source->end()));
+    const auto *data = reinterpret_cast<const char *>(source->data());
+    const auto size = source->size();
+    return addShaderSource(type, {data, size});
 }
 
 bool ShaderProgram::addShaderSource(GLenum type, std::string_view source)
@@ -44,7 +46,7 @@ bool ShaderProgram::compileAndAttachShader(GLenum type, std::string_view source)
 {
     const auto shader = glCreateShader(type);
 
-    std::array sources = {source.data()};
+    const std::array sources = {source.data()};
     const std::array lengths = {static_cast<GLint>(source.size())};
     static_assert(sources.size() == lengths.size());
     glShaderSource(shader, sources.size(), sources.data(), lengths.data());
