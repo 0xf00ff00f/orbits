@@ -1,3 +1,5 @@
+#pragma once
+
 #include "noncopyable.h"
 
 #include <GL/glew.h>
