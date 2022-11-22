@@ -24,13 +24,14 @@ public:
     ~Buffer();
 
     void bind() const;
-    void allocate(std::size_t size) const { allocate({static_cast<const std::byte *>(nullptr), size}); }
+    void allocate(std::size_t size) const;
     void allocate(std::span<const std::byte> data) const;
     void write(std::size_t offset, std::span<const std::byte> data) const;
 
     GLuint handle() const { return m_handle; }
 
 private:
+    void allocate(std::size_t size, const std::byte *data) const;
     void initialize();
 
     GLenum m_type;

@@ -46,9 +46,19 @@ void Buffer::bind() const
     glBindBuffer(m_type, m_handle);
 }
 
+void Buffer::allocate(std::size_t size) const
+{
+    allocate(size, nullptr);
+}
+
 void Buffer::allocate(std::span<const std::byte> data) const
 {
-    glBufferData(m_type, data.size(), data.data(), m_usage);
+    allocate(data.size(), data.data());
+}
+
+void Buffer::allocate(std::size_t size, const std::byte *data) const
+{
+    glBufferData(m_type, size, data, m_usage);
 }
 
 void Buffer::write(std::size_t offset, std::span<const std::byte> data) const
