@@ -6,7 +6,7 @@
 // based on https://akrzemi1.wordpress.com/2020/10/01/reflection-for-aggregates/
 // could have used Boost.PFR instead, but I wanted to try this using C++20 concepts
 
-namespace ar
+namespace reflect
 {
 
 namespace detail

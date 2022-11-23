@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "ar.h"
+#include "reflect.h"
 #include "buffer.h"
 #include "log.h"
 
@@ -89,7 +89,7 @@ void Mesh<VertexT>::render(GLenum primitive) const
 {
     m_buffer->bind();
 
-    ar::forEachMember(VertexT{}, [index = 0, offset = static_cast<const std::byte *>(nullptr)](const auto &m) mutable {
+    reflect::forEachMember(VertexT{}, [index = 0, offset = static_cast<const std::byte *>(nullptr)](const auto &m) mutable {
         using Type = std::decay_t<decltype(m)>;
         glEnableVertexAttribArray(index);
         const auto size = detail::GLSize<Type>::value;
@@ -101,7 +101,7 @@ void Mesh<VertexT>::render(GLenum primitive) const
 
     glDrawArrays(primitive, 0, m_vertexCount);
 
-    ar::forEachMember(VertexT{}, [index = 0](const auto &) mutable {
+    reflect::forEachMember(VertexT{}, [index = 0](const auto &) mutable {
         glDisableVertexAttribArray(index);
         ++index;
     });
