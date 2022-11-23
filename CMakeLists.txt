@@ -21,6 +21,20 @@ set(SOURCES
     ioutil.h
     shaderprogram.cc
     shaderprogram.h
+    pixeltype.h
+    pixmap.cc
+    pixmap.h
+    abstracttexture.h
+    texture.cc
+    texture.h
+    lazytexture.cc
+    lazytexture.h
+    textureatlaspage.cc
+    textureatlaspage.h
+    textureatlas.cc
+    textureatlas.h
+    fontcache.cc
+    fontcache.h
 )
 
 add_executable(game ${SOURCES})
