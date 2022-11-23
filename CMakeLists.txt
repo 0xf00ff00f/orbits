@@ -43,6 +43,7 @@ target_link_libraries(game
     PRIVATE
         glm
         stb
+        microui
         GLEW::GLEW
         OpenGL::GL
 )
