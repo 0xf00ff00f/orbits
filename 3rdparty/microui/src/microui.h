@@ -175,9 +175,9 @@ typedef struct {
 
 struct mu_Context {
   /* callbacks */
-  int (*text_width)(mu_Font font, const char *str, int len);
-  int (*text_height)(mu_Font font);
-  void (*draw_frame)(mu_Context *ctx, mu_Rect rect, int colorid);
+  int (*text_width)(mu_Font font, const char *str, int len, void *extra);
+  int (*text_height)(mu_Font font, void *extra);
+  void (*draw_frame)(mu_Context *ctx, mu_Rect rect, int colorid, void *extra);
   /* core state */
   mu_Style _style;
   mu_Style *style;
@@ -214,6 +214,7 @@ struct mu_Context {
   int key_down;
   int key_pressed;
   char input_text[32];
+  void *extra; /* passed to callback functions */
 };
 
 

@@ -35,6 +35,12 @@ set(SOURCES
     textureatlas.h
     fontcache.cc
     fontcache.h
+    ui.cc
+    ui.h
+    shadermanager.cc
+    shadermanager.h
+    spritebatcher.cc
+    spritebatcher.h
 )
 
 add_executable(game ${SOURCES})

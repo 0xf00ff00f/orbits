@@ -41,12 +41,12 @@ std::optional<PackedPixmap> TextureAtlas::addPixmap(const Pixmap &pm)
         return std::nullopt;
     }
 
-    std::optional<BoxF> textureCoords;
+    std::optional<BoxF> texCoord;
     LazyTexture *texture = nullptr;
 
     for (auto &entry : m_pages)
     {
-        if ((textureCoords = entry->page.insert(pm)))
+        if ((texCoord = entry->page.insert(pm)))
         {
             entry->texture.markDirty();
             texture = &entry->texture;
@@ -54,12 +54,12 @@ std::optional<PackedPixmap> TextureAtlas::addPixmap(const Pixmap &pm)
         }
     }
 
-    if (!textureCoords)
+    if (!texCoord)
     {
         m_pages.emplace_back(new PageTexture(m_pageWidth, m_pageHeight, m_pixelType));
         auto &entry = m_pages.back();
-        textureCoords = entry->page.insert(pm);
-        if (!textureCoords)
+        texCoord = entry->page.insert(pm);
+        if (!texCoord)
         {
             // shouldn't ever happen
             assert(false);
@@ -71,7 +71,7 @@ std::optional<PackedPixmap> TextureAtlas::addPixmap(const Pixmap &pm)
     PackedPixmap packedPixmap;
     packedPixmap.width = pm.width;
     packedPixmap.height = pm.height;
-    packedPixmap.textureCoords = *textureCoords;
+    packedPixmap.texCoord = *texCoord;
     packedPixmap.texture = texture;
 
     return packedPixmap;

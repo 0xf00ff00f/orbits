@@ -14,7 +14,7 @@ struct PackedPixmap
 {
     int width;
     int height;
-    BoxF textureCoords;
+    BoxF texCoord;
     const AbstractTexture *texture;
 };
 

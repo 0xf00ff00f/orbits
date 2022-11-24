@@ -115,7 +115,7 @@ static int rect_overlaps_vec2(mu_Rect r, mu_Vec2 p) {
 }
 
 
-static void draw_frame(mu_Context *ctx, mu_Rect rect, int colorid) {
+static void draw_frame(mu_Context *ctx, mu_Rect rect, int colorid, void *extra) {
   mu_draw_rect(ctx, rect, ctx->style->colors[colorid]);
   if (colorid == MU_COLOR_SCROLLBASE  ||
       colorid == MU_COLOR_SCROLLTHUMB ||
@@ -487,7 +487,7 @@ void mu_draw_text(mu_Context *ctx, mu_Font font, const char *str, int len,
 {
   mu_Command *cmd;
   mu_Rect rect = mu_rect(
-    pos.x, pos.y, ctx->text_width(font, str, len), ctx->text_height(font));
+    pos.x, pos.y, ctx->text_width(font, str, len, ctx->extra), ctx->text_height(font, ctx->extra));
   int clipped = mu_check_clip(ctx, rect);
   if (clipped == MU_CLIP_ALL ) { return; }
   if (clipped == MU_CLIP_PART) { mu_set_clip(ctx, mu_get_clip_rect(ctx)); }
@@ -645,7 +645,7 @@ void mu_draw_control_frame(mu_Context *ctx, mu_Id id, mu_Rect rect,
 {
   if (opt & MU_OPT_NOFRAME) { return; }
   colorid += (ctx->focus == id) ? 2 : (ctx->hover == id) ? 1 : 0;
-  ctx->draw_frame(ctx, rect, colorid);
+  ctx->draw_frame(ctx, rect, colorid, ctx->extra);
 }
 
 
@@ -654,9 +654,9 @@ void mu_draw_control_text(mu_Context *ctx, const char *str, mu_Rect rect,
 {
   mu_Vec2 pos;
   mu_Font font = ctx->style->font;
-  int tw = ctx->text_width(font, str, -1);
+  int tw = ctx->text_width(font, str, -1, ctx->extra);
   mu_push_clip_rect(ctx, rect);
-  pos.y = rect.y + (rect.h - ctx->text_height(font)) / 2;
+  pos.y = rect.y + (rect.h - ctx->text_height(font, ctx->extra)) / 2;
   if (opt & MU_OPT_ALIGNCENTER) {
     pos.x = rect.x + (rect.w - tw) / 2;
   } else if (opt & MU_OPT_ALIGNRIGHT) {
@@ -704,7 +704,7 @@ void mu_text(mu_Context *ctx, const char *text) {
   mu_Font font = ctx->style->font;
   mu_Color color = ctx->style->colors[MU_COLOR_TEXT];
   mu_layout_begin_column(ctx);
-  mu_layout_row(ctx, 1, &width, ctx->text_height(font));
+  mu_layout_row(ctx, 1, &width, ctx->text_height(font, ctx->extra));
   do {
     mu_Rect r = mu_layout_next(ctx);
     int w = 0;
@@ -712,9 +712,9 @@ void mu_text(mu_Context *ctx, const char *text) {
     do {
       const char* word = p;
       while (*p && *p != ' ' && *p != '\n') { p++; }
-      w += ctx->text_width(font, word, p - word);
+      w += ctx->text_width(font, word, p - word, ctx->extra);
       if (w > r.w && end != start) { break; }
-      w += ctx->text_width(font, p, 1);
+      w += ctx->text_width(font, p, 1, ctx->extra);
       end = p++;
     } while (*end && *end != '\n');
     mu_draw_text(ctx, font, start, end - start, mu_vec2(r.x, r.y), color);
@@ -804,8 +804,8 @@ int mu_textbox_raw(mu_Context *ctx, char *buf, int bufsz, mu_Id id, mu_Rect r,
   if (ctx->focus == id) {
     mu_Color color = ctx->style->colors[MU_COLOR_TEXT];
     mu_Font font = ctx->style->font;
-    int textw = ctx->text_width(font, buf, -1);
-    int texth = ctx->text_height(font);
+    int textw = ctx->text_width(font, buf, -1, ctx->extra);
+    int texth = ctx->text_height(font, ctx->extra);
     int ofx = r.w - ctx->style->padding - textw - 1;
     int textx = r.x + mu_min(ofx, ctx->style->padding);
     int texty = r.y + (r.h - texth) / 2;
@@ -949,7 +949,7 @@ static int header(mu_Context *ctx, const char *label, int istreenode, int opt) {
 
   /* draw */
   if (istreenode) {
-    if (ctx->hover == id) { ctx->draw_frame(ctx, r, MU_COLOR_BUTTONHOVER); }
+    if (ctx->hover == id) { ctx->draw_frame(ctx, r, MU_COLOR_BUTTONHOVER, ctx->extra); }
   } else {
     mu_draw_control_frame(ctx, id, r, MU_COLOR_BUTTON, 0);
   }
@@ -1008,11 +1008,11 @@ void mu_end_treenode(mu_Context *ctx) {
       cnt->scroll.y = mu_clamp(cnt->scroll.y, 0, maxscroll);                \
                                                                             \
       /* draw base and thumb */                                             \
-      ctx->draw_frame(ctx, base, MU_COLOR_SCROLLBASE);                      \
+      ctx->draw_frame(ctx, base, MU_COLOR_SCROLLBASE, ctx->extra);          \
       thumb = base;                                                         \
       thumb.h = mu_max(ctx->style->thumb_size, base.h * b->h / cs.y);       \
       thumb.y += cnt->scroll.y * (base.h - thumb.h) / maxscroll;            \
-      ctx->draw_frame(ctx, thumb, MU_COLOR_SCROLLTHUMB);                    \
+      ctx->draw_frame(ctx, thumb, MU_COLOR_SCROLLTHUMB, ctx->extra);        \
                                                                             \
       /* set this as the scroll_target (will get scrolled on mousewheel) */ \
       /* if the mouse is over it */                                         \
@@ -1093,14 +1093,14 @@ int mu_begin_window_ex(mu_Context *ctx, const char *title, mu_Rect rect, int opt
 
   /* draw frame */
   if (~opt & MU_OPT_NOFRAME) {
-    ctx->draw_frame(ctx, rect, MU_COLOR_WINDOWBG);
+    ctx->draw_frame(ctx, rect, MU_COLOR_WINDOWBG, ctx->extra);
   }
 
   /* do title bar */
   if (~opt & MU_OPT_NOTITLE) {
     mu_Rect tr = rect;
     tr.h = ctx->style->title_height;
-    ctx->draw_frame(ctx, tr, MU_COLOR_TITLEBG);
+    ctx->draw_frame(ctx, tr, MU_COLOR_TITLEBG, ctx->extra);
 
     /* do title text */
     if (~opt & MU_OPT_NOTITLE) {
@@ -1194,7 +1194,7 @@ void mu_begin_panel_ex(mu_Context *ctx, const char *name, int opt) {
   cnt = get_container(ctx, ctx->last_id, opt);
   cnt->rect = mu_layout_next(ctx);
   if (~opt & MU_OPT_NOFRAME) {
-    ctx->draw_frame(ctx, cnt->rect, MU_COLOR_PANELBG);
+    ctx->draw_frame(ctx, cnt->rect, MU_COLOR_PANELBG, ctx->extra);
   }
   push(ctx->container_stack, cnt);
   push_container_body(ctx, cnt, cnt->rect, opt);

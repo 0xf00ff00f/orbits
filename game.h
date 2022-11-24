@@ -5,7 +5,8 @@
 
 #include <memory>
 
-class ShaderProgram;
+class ShaderManager;
+class UI;
 
 class Game : private NonCopyable
 {
@@ -23,11 +24,12 @@ private:
     int m_width = 0;
     int m_height = 0;
 
-    std::unique_ptr<ShaderProgram> m_program;
     struct Vertex
     {
-        glm::vec4 position;
+        glm::vec2 position;
         glm::vec4 color;
     };
     std::unique_ptr<Mesh<Vertex>> m_mesh;
+    std::unique_ptr<ShaderManager> m_shaderManager;
+    std::unique_ptr<UI> m_ui;
 };
