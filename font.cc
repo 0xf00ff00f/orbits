@@ -39,7 +39,7 @@ float Font::textWidth(std::u32string_view text) const
     {
         for (auto ch : text)
         {
-            if (const auto *g = glyphs->getGlyph(ch); g)
+            if (const auto *g = glyphs->glyph(ch); g)
                 width += g->advanceWidth;
         }
     }

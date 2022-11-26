@@ -69,15 +69,14 @@ void Painter::drawText(std::u32string_view text, const glm::vec2 &pos, const glm
     auto basePos = glm::vec2(pos.x, pos.y + m_font->ascent());
     for (auto ch : text)
     {
-        const auto glyph = m_font->getGlyph(ch);
-        if (!glyph)
-            continue;
-        const auto topLeft = basePos + glm::vec2(glyph->boundingBox.min);
-        const auto bottomRight = topLeft + glm::vec2(glyph->boundingBox.max - glyph->boundingBox.min);
-        const auto &pixmap = glyph->pixmap;
-        m_spriteBatcher->addSprite(pixmap, topLeft, bottomRight, color, depth);
-
-        basePos.x += glyph->advanceWidth;
+        if (const auto *g = m_font->glyph(ch); g)
+        {
+            const auto topLeft = basePos + glm::vec2(g->boundingBox.min);
+            const auto bottomRight = topLeft + glm::vec2(g->boundingBox.max - g->boundingBox.min);
+            const auto &pixmap = g->pixmap;
+            m_spriteBatcher->addSprite(pixmap, topLeft, bottomRight, color, depth);
+            basePos.x += g->advanceWidth;
+        }
     }
 }
 

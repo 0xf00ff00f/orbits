@@ -30,7 +30,7 @@ public:
         float advanceWidth;
         PackedPixmap pixmap;
     };
-    const Glyph *getGlyph(int codepoint);
+    const Glyph *glyph(int codepoint);
 
     int pixelHeight() const { return m_pixelHeight; }
     float ascent() const { return m_ascent; }
@@ -39,7 +39,7 @@ public:
 
 private:
     std::unique_ptr<Glyph> initializeGlyph(int codepoint);
-    Pixmap getCodepointPixmap(int codepoint) const;
+    Pixmap codepointPixmap(int codepoint) const;
 
     std::vector<unsigned char> m_ttfBuffer;
     stbtt_fontinfo m_font;

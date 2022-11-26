@@ -42,7 +42,7 @@ bool GlyphCache::load(const std::string &ttfPath, int pixelHeight)
     return true;
 }
 
-const GlyphCache::Glyph *GlyphCache::getGlyph(int codepoint)
+const GlyphCache::Glyph *GlyphCache::glyph(int codepoint)
 {
     auto it = m_glyphs.find(codepoint);
     if (it == m_glyphs.end())
@@ -53,7 +53,7 @@ const GlyphCache::Glyph *GlyphCache::getGlyph(int codepoint)
 std::unique_ptr<GlyphCache::Glyph> GlyphCache::initializeGlyph(int codepoint)
 {
     auto *painter = System::instance().uiPainter();
-    auto pm = painter->m_textureAtlas->addPixmap(getCodepointPixmap(codepoint));
+    auto pm = painter->m_textureAtlas->addPixmap(codepointPixmap(codepoint));
     if (!pm)
     {
         log("Couldn't fit glyph %d in texture atlas\n", codepoint);
@@ -76,7 +76,7 @@ std::unique_ptr<GlyphCache::Glyph> GlyphCache::initializeGlyph(int codepoint)
     return glyph;
 }
 
-Pixmap GlyphCache::getCodepointPixmap(int codepoint) const
+Pixmap GlyphCache::codepointPixmap(int codepoint) const
 {
     int ix0, iy0, ix1, iy1;
     stbtt_GetCodepointBitmapBox(&m_font, codepoint, m_scale, m_scale, &ix0, &iy0, &ix1, &iy1);
