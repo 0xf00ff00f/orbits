@@ -42,38 +42,19 @@ void SpriteBatcher::begin()
 
 void SpriteBatcher::addSprite(const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &color, int depth)
 {
-    const auto &p0 = topLeft;
-    const auto &p1 = bottomRight;
-
-    const auto verts = QuadVerts{
-        {{{p0.x, p0.y}, {}, color}, {{p1.x, p0.y}, {}, color}, {{p1.x, p1.y}, {}, color}, {{p0.x, p1.y}, {}, color}}};
-
-    addSprite(nullptr, verts, depth);
-}
-
-void SpriteBatcher::addSprite(const QuadVerts &verts, int depth)
-{
-    addSprite(nullptr, verts, depth);
+    addSprite(nullptr, {topLeft, {}}, {bottomRight, {}}, color, depth);
 }
 
 void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight,
                               const glm::vec4 &color, int depth)
 {
-    const auto &p0 = topLeft;
-    const auto &p1 = bottomRight;
-
-    const auto &t0 = pixmap.texCoord.min;
-    const auto &t1 = pixmap.texCoord.max;
-
-    const auto verts = QuadVerts{{{{p0.x, p0.y}, {t0.x, t0.y}, color},
-                                  {{p1.x, p0.y}, {t1.x, t0.y}, color},
-                                  {{p1.x, p1.y}, {t1.x, t1.y}, color},
-                                  {{p0.x, p1.y}, {t0.x, t1.y}, color}}};
-
-    addSprite(pixmap.texture, verts, depth);
+    const auto &topLeftUV = pixmap.texCoord.min;
+    const auto &bottomRightUV = pixmap.texCoord.max;
+    addSprite(pixmap.texture, {topLeft, topLeftUV}, {bottomRight, bottomRightUV}, color, depth);
 }
 
-void SpriteBatcher::addSprite(const AbstractTexture *texture, const QuadVerts &verts, int depth)
+void SpriteBatcher::addSprite(const AbstractTexture *texture, const PositionUV &topLeft, const PositionUV &bottomRight,
+                              const glm::vec4 &color, int depth)
 {
     if (m_quadCount == MaxQuadsPerBatch)
         flush();
@@ -81,7 +62,9 @@ void SpriteBatcher::addSprite(const AbstractTexture *texture, const QuadVerts &v
     auto &quad = m_quads[m_quadCount++];
     quad.texture = texture;
     quad.program = m_batchProgram;
-    quad.verts = verts;
+    quad.topLeft = topLeft;
+    quad.bottomRight = bottomRight;
+    quad.color = color;
     quad.depth = depth;
 }
 
@@ -130,29 +113,34 @@ void SpriteBatcher::flush()
         for (auto it = batchStart; it != batchEnd; ++it)
         {
             auto *quadPtr = *it;
-            const auto &verts = quadPtr->verts;
-            const auto emitVertex = [&data, &verts](int index) {
-                const auto &v = verts[index];
 
-                *data++ = v.position.x;
-                *data++ = v.position.y;
+            const auto emitVertex = [&data, color = quadPtr->color](const glm::vec2 &position,
+                                                                    const glm::vec2 &texCoord) {
+                *data++ = position.x;
+                *data++ = position.y;
 
-                *data++ = v.texCoord.x;
-                *data++ = v.texCoord.y;
+                *data++ = texCoord.x;
+                *data++ = texCoord.y;
 
-                *data++ = v.color.x;
-                *data++ = v.color.y;
-                *data++ = v.color.z;
-                *data++ = v.color.w;
+                *data++ = color.x;
+                *data++ = color.y;
+                *data++ = color.z;
+                *data++ = color.w;
             };
 
-            emitVertex(0);
-            emitVertex(1);
-            emitVertex(2);
+            const auto &p0 = quadPtr->topLeft.position;
+            const auto &t0 = quadPtr->topLeft.texCoord;
 
-            emitVertex(2);
-            emitVertex(3);
-            emitVertex(0);
+            const auto &p1 = quadPtr->bottomRight.position;
+            const auto &t1 = quadPtr->bottomRight.texCoord;
+
+            emitVertex({p0.x, p0.y}, {t0.x, t0.y});
+            emitVertex({p1.x, p0.y}, {t1.x, t0.y});
+            emitVertex({p1.x, p1.y}, {t1.x, t1.y});
+
+            emitVertex({p1.x, p1.y}, {t1.x, t1.y});
+            emitVertex({p0.x, p1.y}, {t0.x, t1.y});
+            emitVertex({p0.x, p0.y}, {t0.x, t0.y});
         }
         assert(data == bufferData.data() + bufferRangeSize);
         m_buffer.write(m_bufferOffset * sizeof(GLfloat), std::as_bytes(std::span(bufferData.data(), bufferRangeSize)));
