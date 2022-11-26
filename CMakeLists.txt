@@ -49,6 +49,8 @@ set(SOURCES
     fontcache.h
     font.cc
     font.h
+    pixmapcache.cc
+    pixmapcache.h
 )
 
 add_executable(game ${SOURCES})

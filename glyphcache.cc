@@ -53,7 +53,7 @@ const GlyphCache::Glyph *GlyphCache::glyph(int codepoint)
 std::unique_ptr<GlyphCache::Glyph> GlyphCache::initializeGlyph(int codepoint)
 {
     auto *painter = System::instance().uiPainter();
-    auto pm = painter->m_textureAtlas->addPixmap(codepointPixmap(codepoint));
+    auto pm = painter->m_fontTextureAtlas->addPixmap(codepointPixmap(codepoint));
     if (!pm)
     {
         log("Couldn't fit glyph %d in texture atlas\n", codepoint);

@@ -63,9 +63,13 @@ std::unique_ptr<gl::ShaderProgram> loadProgram(ShaderManager::Program id)
     static const ProgramSource programSources[] = {
         // flat
         {"flat.vert", "flat.frag", {ShaderManager::Attribute::Position, ShaderManager::Attribute::Color}},
-        // decal
+        // text
         {"text.vert",
          "text.frag",
+         {ShaderManager::Attribute::Position, ShaderManager::Attribute::TexCoord, ShaderManager::Attribute::Color}},
+        // decal
+        {"decal.vert",
+         "decal.frag",
          {ShaderManager::Attribute::Position, ShaderManager::Attribute::TexCoord, ShaderManager::Attribute::Color}},
     };
     static_assert(std::extent_v<decltype(programSources)> == ShaderManager::NumPrograms,

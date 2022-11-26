@@ -23,6 +23,7 @@ public:
     {
         Flat,
         Text,
+        Decal,
         NumPrograms
     };
     void useProgram(Program program);

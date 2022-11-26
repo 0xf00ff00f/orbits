@@ -64,9 +64,9 @@ public:
 private:
     void updateSize();
 
-    Margins m_margins;
     Font m_font;
     std::u32string m_text;
+    Margins m_margins;
     float m_width = 0;
     float m_height = 0;
 };
@@ -74,18 +74,28 @@ private:
 class Image : public Item
 {
 public:
-    explicit Image(const Pixmap &pixmap);
+    Image();
+    explicit Image(std::string_view source);
 
-    float width() override;
-    float height() override;
+    float width() override { return m_width; }
+    float height() override { return m_height; }
+
+    void setSource(std::string_view source);
+    const std::string &source() const { return m_source; }
+
+    void setMargins(Margins margins);
+    Margins margins() const { return m_margins; }
+
     void render(const glm::vec2 &pos, int depth = 0) override;
 
-    Margins margins;
+    glm::vec4 color = glm::vec4(1, 1, 1, 1);
 
 private:
     void updateSize();
 
-    PackedPixmap m_pixmap;
+    std::string m_source;
+    std::optional<PackedPixmap> m_pixmap;
+    Margins m_margins;
     float m_width = 0;
     float m_height = 0;
 };

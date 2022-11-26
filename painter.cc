@@ -4,6 +4,7 @@
 #include "glyphcache.h"
 #include "spritebatcher.h"
 #include "fontcache.h"
+#include "pixmapcache.h"
 #include "font.h"
 #include "log.h"
 
@@ -12,12 +13,15 @@ namespace miniui
 
 namespace
 {
-constexpr auto TextureAtlasPageSize = 512;
+constexpr auto TextureAtlasPageSize = 1024;
 }
 
 Painter::Painter()
     : m_fontCache(std::make_unique<FontCache>())
-    , m_textureAtlas(std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
+    , m_pixmapCache(std::make_unique<PixmapCache>())
+    , m_fontTextureAtlas(
+          std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
+    , m_pixmapTextureAtlas(std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::RGBA))
     , m_spriteBatcher(std::make_unique<SpriteBatcher>())
 {
 }
@@ -54,6 +58,13 @@ void Painter::drawRect(const glm::vec2 &topLeft, const glm::vec2 &bottomRight, c
 {
     m_spriteBatcher->setBatchProgram(ShaderManager::Flat);
     m_spriteBatcher->addSprite(topLeft, bottomRight, color, depth);
+}
+
+void Painter::drawPixmap(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight,
+                         const glm::vec4 &color, int depth)
+{
+    m_spriteBatcher->setBatchProgram(ShaderManager::Decal);
+    m_spriteBatcher->addSprite(pixmap, topLeft, bottomRight, color, depth);
 }
 
 void Painter::drawText(std::u32string_view text, const glm::vec2 &pos, const glm::vec4 &color, int depth)

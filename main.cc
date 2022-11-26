@@ -10,7 +10,7 @@
 int main()
 {
     constexpr auto Width = 1200;
-    constexpr auto Height = 600;
+    constexpr auto Height = 1000;
 
     glfwInit();
     glfwSetErrorCallback(

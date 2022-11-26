@@ -3,6 +3,7 @@
 #include "system.h"
 #include "painter.h"
 #include "glyphcache.h"
+#include "pixmapcache.h"
 
 #include <algorithm>
 
@@ -68,6 +69,50 @@ void Label::render(const glm::vec2 &pos, int depth)
     auto *painter = System::instance().uiPainter();
     painter->setFont(m_font);
     painter->drawText(m_text, pos + glm::vec2(m_margins.left, m_margins.top), color, depth + 1);
+}
+
+Image::Image() = default;
+
+Image::Image(std::string_view source)
+{
+    setSource(source);
+}
+
+void Image::setSource(std::string_view source)
+{
+    m_source = source;
+    m_pixmap = [this] {
+        auto *cache = System::instance().uiPainter()->pixmapCache();
+        return cache->pixmap(m_source);
+    }();
+    updateSize();
+}
+
+void Image::setMargins(Margins margins)
+{
+    m_margins = margins;
+    updateSize();
+}
+
+void Image::updateSize()
+{
+    m_height = m_margins.top + m_margins.bottom;
+    m_width = m_margins.left + m_margins.right;
+    if (m_pixmap)
+    {
+        m_width += m_pixmap->width;
+        m_height += m_pixmap->height;
+    }
+}
+
+void Image::render(const glm::vec2 &pos, int depth)
+{
+    renderBackground(pos, depth);
+    if (m_pixmap)
+    {
+        auto *painter = System::instance().uiPainter();
+        painter->drawPixmap(*m_pixmap, pos, pos + glm::vec2(m_pixmap->width, m_pixmap->height), color, depth);
+    }
 }
 
 void Container::addItem(std::unique_ptr<Item> item)

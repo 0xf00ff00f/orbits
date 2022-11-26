@@ -45,6 +45,9 @@ Game::Game()
     addLabel(row.get(), U"text"sv, 60);
     container->addItem(std::move(row));
 
+    auto image = std::make_unique<miniui::Image>("peppers.jpg");
+    container->addItem(std::move(image));
+
     addLabel(container, U"Sphinx of black quartz"sv, 44);
 
     initialize();
