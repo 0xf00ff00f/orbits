@@ -15,6 +15,39 @@ class Pixmap;
 namespace miniui
 {
 
+enum class Align : unsigned
+{
+    None = 0,
+    Left = 1 << 0,
+    HCenter = 1 << 1,
+    Right = 1 << 2,
+    Top = 1 << 3,
+    VCenter = 1 << 4,
+    Bottom = 1 << 5
+};
+
+constexpr Align operator&(Align x, Align y)
+{
+    using UT = typename std::underlying_type_t<Align>;
+    return static_cast<Align>(static_cast<UT>(x) & static_cast<UT>(y));
+}
+
+constexpr Align &operator&=(Align &x, Align y)
+{
+    return x = x & y;
+}
+
+constexpr Align operator|(Align x, Align y)
+{
+    using UT = typename std::underlying_type_t<Align>;
+    return static_cast<Align>(static_cast<UT>(x) | static_cast<UT>(y));
+}
+
+constexpr Align &operator|=(Align &x, Align y)
+{
+    return x = x | y;
+}
+
 struct Margins
 {
     float top = 0;
@@ -34,6 +67,7 @@ public:
 
     bool fillBackground = false;
     glm::vec4 bgColor;
+    Align alignment = Align::VCenter | Align::Left;
 
 protected:
     void renderBackground(const glm::vec2 &pos, int depth);

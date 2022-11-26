@@ -23,32 +23,57 @@ Game::Game()
     container->setMargins({10, 10, 10, 10});
     container->setSpacing(5);
 
-    auto addLabel = [](miniui::Container *container, std::u32string_view text, int fontSize) {
+    auto makeLabel = [](std::u32string_view text, int fontSize) {
         auto label = std::make_unique<miniui::Label>(text);
         label->fillBackground = true;
         label->bgColor = glm::vec4(0, 1, 0, 0.5);
         label->setMargins({10, 10, 10, 10});
         label->setFont(miniui::Font("OpenSans_Regular", fontSize));
-        container->addItem(std::move(label));
+        return label;
     };
-    addLabel(container, U"The quick brown fox"sv, 44);
-    addLabel(container, U"Lorem ipsum"sv, 44);
+    container->addItem(makeLabel(U"The quick brown fox"sv, 44));
+    container->addItem(makeLabel(U"Lorem ipsum"sv, 44));
 
-    auto row = std::make_unique<miniui::Row>();
-    row->fillBackground = true;
-    row->bgColor = glm::vec4(1, 1, 0, 0.5);
-    row->setMargins({20, 20, 20, 20});
-    row->setSpacing(20);
-    addLabel(row.get(), U"Here"sv, 30);
-    addLabel(row.get(), U"is"sv, 40);
-    addLabel(row.get(), U"some"sv, 50);
-    addLabel(row.get(), U"text"sv, 60);
-    container->addItem(std::move(row));
+    {
+        auto row = std::make_unique<miniui::Row>();
+        row->fillBackground = true;
+        row->bgColor = glm::vec4(1, 1, 0, 0.5);
+        row->alignment = miniui::Align::Right;
+        row->setMargins({20, 20, 20, 20});
+        row->setSpacing(20);
+        row->addItem(makeLabel(U"Here"sv, 30));
+        row->addItem(makeLabel(U"is"sv, 40));
+        row->addItem(makeLabel(U"some"sv, 50));
+        row->addItem(makeLabel(U"text"sv, 60));
+        container->addItem(std::move(row));
+    }
 
-    auto image = std::make_unique<miniui::Image>("peppers.jpg");
-    container->addItem(std::move(image));
+    {
+        auto row = std::make_unique<miniui::Row>();
+        row->setSpacing(30);
 
-    addLabel(container, U"Sphinx of black quartz"sv, 44);
+        row->addItem(std::make_unique<miniui::Image>("peppers.jpg"));
+
+        auto l0 = makeLabel(U"Hellooooo"sv, 60);
+        l0->alignment = miniui::Align::Bottom;
+        row->addItem(std::move(l0));
+
+        auto l1 = makeLabel(U"Hellooooo"sv, 60);
+        l1->alignment = miniui::Align::VCenter;
+        row->addItem(std::move(l1));
+
+        auto l2 = makeLabel(U"Hellooooo"sv, 60);
+        l2->alignment = miniui::Align::Top;
+        row->addItem(std::move(l2));
+
+        container->addItem(std::move(row));
+    }
+
+    {
+        auto l = makeLabel(U"Sphinx of black quartz"sv, 44);
+        l->alignment = miniui::Align::Right;
+        container->addItem(std::move(l));
+    }
 
     initialize();
 }

@@ -154,7 +154,20 @@ void Column::render(const glm::vec2 &pos, int depth)
     auto p = pos + glm::vec2(m_margins.left, m_margins.top);
     for (auto &item : m_items)
     {
-        item->render(p, depth + 1);
+        const float offset = [this, &item] {
+            const auto alignment = item->alignment & (Align::Left | Align::HCenter | Align::Right);
+            switch (alignment)
+            {
+            case Align::Left:
+            default:
+                return 0.0f;
+            case Align::HCenter:
+                return 0.5f * (m_width - (m_margins.left + m_margins.right) - item->width());
+            case Align::Right:
+                return m_width - (m_margins.left + m_margins.right) - item->width();
+            }
+        }();
+        item->render(p + glm::vec2(offset, 0.0f), depth + 1);
         p.y += item->height() + m_spacing;
     }
 }
@@ -180,7 +193,20 @@ void Row::render(const glm::vec2 &pos, int depth)
     auto p = pos + glm::vec2(m_margins.left, m_margins.top);
     for (auto &item : m_items)
     {
-        item->render(p, depth + 1);
+        const float offset = [this, &item] {
+            const auto alignment = item->alignment & (Align::Top | Align::VCenter | Align::Bottom);
+            switch (alignment)
+            {
+            case Align::Top:
+            default:
+                return 0.0f;
+            case Align::VCenter:
+                return 0.5f * (m_height - (m_margins.top + m_margins.bottom) - item->height());
+            case Align::Bottom:
+                return m_height - (m_margins.top + m_margins.bottom) - item->height();
+            }
+        }();
+        item->render(p + glm::vec2(0.0f, offset), depth + 1);
         p.x += item->width() + m_spacing;
     }
 }
