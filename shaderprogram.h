@@ -11,6 +11,9 @@
 
 #include <glm/glm.hpp>
 
+namespace gl
+{
+
 class ShaderProgram : private NonCopyable
 {
 public:
@@ -51,3 +54,5 @@ private:
     GLuint m_id = 0;
     std::string m_log;
 };
+
+}

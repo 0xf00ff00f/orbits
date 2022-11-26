@@ -3,6 +3,9 @@
 
 #include <memory>
 
+namespace gl
+{
+
 namespace
 {
 constexpr GLenum Target = GL_TEXTURE_2D;
@@ -71,4 +74,6 @@ void Texture::gpuSetData(const unsigned char *data) const
 void Texture::bind() const
 {
     glBindTexture(Target, m_id);
+}
+
 }

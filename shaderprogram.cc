@@ -10,6 +10,9 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+namespace gl
+{
+
 ShaderProgram::ShaderProgram()
 {
     initialize();
@@ -167,4 +170,6 @@ void ShaderProgram::setUniform(int location, const glm::mat3 &value) const
 void ShaderProgram::setUniform(int location, const glm::mat4 &value) const
 {
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
 }

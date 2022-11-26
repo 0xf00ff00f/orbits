@@ -6,6 +6,8 @@
 #include "buffer.h"
 #include "log.h"
 
+namespace gl {
+
 namespace detail
 {
 template<typename T>
@@ -106,4 +108,6 @@ void Mesh<VertexT>::render(GLenum primitive) const
         glDisableVertexAttribArray(index);
         ++index;
     });
+}
+
 }

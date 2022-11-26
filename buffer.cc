@@ -1,5 +1,8 @@
 #include "buffer.h"
 
+namespace gl
+{
+
 namespace
 {
 GLenum toGLTarget(Buffer::Type type)
@@ -64,4 +67,6 @@ void Buffer::allocate(std::size_t size, const std::byte *data) const
 void Buffer::write(std::size_t offset, std::span<const std::byte> data) const
 {
     glBufferSubData(m_type, offset, data.size(), data.data());
+}
+
 }

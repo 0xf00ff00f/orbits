@@ -58,7 +58,7 @@ private:
     ShaderManager *m_shaderManager;
     std::array<Quad, MaxQuadsPerBatch> m_quads;
     int m_quadCount = 0;
-    Buffer m_buffer;
+    gl::Buffer m_buffer;
     glm::mat4 m_transformMatrix;
     ShaderManager::Program m_batchProgram = ShaderManager::Program::Flat;
     bool m_bufferAllocated = false;

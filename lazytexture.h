@@ -18,6 +18,6 @@ public:
 
 private:
     const Pixmap *m_pixmap;
-    Texture m_texture;
+    gl::Texture m_texture;
     mutable bool m_dirty;
 };

@@ -7,6 +7,9 @@
 #include <memory>
 #include <span>
 
+namespace gl
+{
+
 class Buffer;
 
 template<typename VertexT>
@@ -23,5 +26,7 @@ private:
     std::size_t m_vertexCount = 0;
     std::unique_ptr<Buffer> m_buffer;
 };
+
+}
 
 #include "mesh.inl"

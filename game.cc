@@ -10,7 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 Game::Game()
-    : m_mesh(std::make_unique<Mesh<Vertex>>())
+    : m_mesh(std::make_unique<gl::Mesh<Vertex>>())
     , m_shaderManager(std::make_unique<ShaderManager>())
     , m_ui(std::make_unique<UI>(m_shaderManager.get()))
 {

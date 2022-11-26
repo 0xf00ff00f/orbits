@@ -6,8 +6,12 @@
 #include <array>
 #include <memory>
 
-class ShaderProgram;
 class Connection;
+
+namespace gl
+{
+class ShaderProgram;
+}
 
 class ShaderManager : private NonCopyable
 {
@@ -51,14 +55,17 @@ public:
 
     int attributeLocation(Attribute attribute);
 
-    const ShaderProgram *currentProgram() const { return m_currentProgram ? m_currentProgram->program.get() : nullptr; }
+    const gl::ShaderProgram *currentProgram() const
+    {
+        return m_currentProgram ? m_currentProgram->program.get() : nullptr;
+    }
 
 private:
     int uniformLocation(Uniform uniform);
 
     struct CachedProgram
     {
-        std::unique_ptr<ShaderProgram> program;
+        std::unique_ptr<gl::ShaderProgram> program;
         std::array<int, Uniform::NumUniforms> uniformLocations;
         std::array<int, Attribute::NumAttributes> attributeLocations;
     };

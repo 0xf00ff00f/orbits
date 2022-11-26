@@ -4,6 +4,9 @@
 
 #include <GL/glew.h>
 
+namespace gl
+{
+
 class Buffer : private NonCopyable
 {
 public:
@@ -38,3 +41,5 @@ private:
     GLenum m_usage;
     GLuint m_handle = 0;
 };
+
+}

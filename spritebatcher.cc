@@ -9,7 +9,7 @@
 
 SpriteBatcher::SpriteBatcher(ShaderManager *shaderManager)
     : m_shaderManager(shaderManager)
-    , m_buffer(Buffer::Type::Vertex, Buffer::Usage::DynamicDraw)
+    , m_buffer(gl::Buffer::Type::Vertex, gl::Buffer::Usage::DynamicDraw)
 {
 }
 

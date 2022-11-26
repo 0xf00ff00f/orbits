@@ -26,10 +26,10 @@ const char *attributeName(ShaderManager::Attribute id)
     return attributeNames[id];
 }
 
-std::unique_ptr<ShaderProgram> loadProgram(const char *vertexShader, const char *fragmentShader,
-                                           std::span<const ShaderManager::Attribute> attributes)
+std::unique_ptr<gl::ShaderProgram> loadProgram(const char *vertexShader, const char *fragmentShader,
+                                               std::span<const ShaderManager::Attribute> attributes)
 {
-    auto program = std::make_unique<ShaderProgram>();
+    auto program = std::make_unique<gl::ShaderProgram>();
     if (!program->addShader(GL_VERTEX_SHADER, shaderPath(vertexShader)))
     {
         log("Failed to add vertex shader for program %s: %s\n", vertexShader, program->log().c_str());
@@ -52,7 +52,7 @@ std::unique_ptr<ShaderProgram> loadProgram(const char *vertexShader, const char 
     return program;
 }
 
-std::unique_ptr<ShaderProgram> loadProgram(ShaderManager::Program id)
+std::unique_ptr<gl::ShaderProgram> loadProgram(ShaderManager::Program id)
 {
     struct ProgramSource
     {

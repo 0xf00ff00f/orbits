@@ -11,6 +11,9 @@
 
 struct Pixmap;
 
+namespace gl
+{
+
 class Texture : public AbstractTexture
 {
 public:
@@ -35,3 +38,5 @@ private:
     GLuint m_id;
     mutable std::vector<unsigned char> m_data;
 };
+
+}
