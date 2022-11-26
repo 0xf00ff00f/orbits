@@ -3,11 +3,13 @@
 #include "ioutil.h"
 #include "pixmap.h"
 #include "log.h"
+#include "system.h"
+#include "painter.h"
 
-FontCache::FontCache(TextureAtlas *textureAtlas)
-    : m_textureAtlas(textureAtlas)
+namespace miniui
 {
-}
+
+FontCache::FontCache() = default;
 
 FontCache::~FontCache() = default;
 
@@ -50,7 +52,8 @@ const FontCache::Glyph *FontCache::getGlyph(int codepoint)
 
 std::unique_ptr<FontCache::Glyph> FontCache::initializeGlyph(int codepoint)
 {
-    auto pm = m_textureAtlas->addPixmap(getCodepointPixmap(codepoint));
+    auto *painter = System::instance().uiPainter();
+    auto pm = painter->m_textureAtlas->addPixmap(getCodepointPixmap(codepoint));
     if (!pm)
     {
         log("Couldn't fit glyph %d in texture atlas\n", codepoint);
@@ -89,4 +92,18 @@ Pixmap FontCache::getCodepointPixmap(int codepoint) const
     stbtt_MakeCodepointBitmap(&m_font, pm.pixels.data(), width, height, width, m_scale, m_scale, codepoint);
 
     return pm;
+}
+
+float FontCache::textWidth(std::u32string_view text)
+{
+    float width = 0;
+    for (auto ch : text)
+    {
+        const auto *g = getGlyph(ch);
+        assert(g);
+        width += g->advanceWidth;
+    }
+    return width;
+}
+
 }

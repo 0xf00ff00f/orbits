@@ -5,7 +5,10 @@
 
 #include <memory>
 
-class UI;
+namespace miniui
+{
+class Item;
+}
 
 class Game : private NonCopyable
 {
@@ -29,5 +32,5 @@ private:
         glm::vec4 color;
     };
     std::unique_ptr<gl::Mesh<Vertex>> m_mesh;
-    std::unique_ptr<UI> m_ui;
+    std::unique_ptr<miniui::Item> m_item;
 };

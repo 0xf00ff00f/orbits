@@ -35,14 +35,16 @@ set(SOURCES
     textureatlas.h
     fontcache.cc
     fontcache.h
-    ui.cc
-    ui.h
+    painter.cc
+    painter.h
     shadermanager.cc
     shadermanager.h
     spritebatcher.cc
     spritebatcher.h
     system.cc
     system.h
+    miniui.cc
+    miniui.h
 )
 
 add_executable(game ${SOURCES})
@@ -51,7 +53,6 @@ target_link_libraries(game
     PRIVATE
         glm
         stb
-        microui
         GLEW::GLEW
         OpenGL::GL
 )

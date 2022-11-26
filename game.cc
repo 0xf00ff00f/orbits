@@ -1,7 +1,8 @@
 #include "game.h"
 
 #include "shadermanager.h"
-#include "ui.h"
+#include "miniui.h"
+#include "painter.h"
 #include "log.h"
 #include "system.h"
 
@@ -12,8 +13,39 @@
 
 Game::Game()
     : m_mesh(std::make_unique<gl::Mesh<Vertex>>())
-    , m_ui(std::make_unique<UI>())
+    , m_item(std::make_unique<miniui::Column>())
 {
+    using namespace std::literals;
+
+    auto *container = static_cast<miniui::Container *>(m_item.get());
+    container->fillBackground = true;
+    container->bgColor = glm::vec4(1, 0, 0, 0.5);
+    container->setMargins({10, 10, 10, 10});
+    container->setSpacing(5);
+
+    auto addLabel = [](miniui::Container *container, std::u32string_view text) {
+        auto label = std::make_unique<miniui::Label>(text);
+        label->fillBackground = true;
+        label->bgColor = glm::vec4(0, 1, 0, 0.5);
+        label->setMargins({10, 10, 10, 10});
+        container->addItem(std::move(label));
+    };
+    addLabel(container, U"The quick brown fox"sv);
+    addLabel(container, U"Lorem ipsum"sv);
+
+    auto row = std::make_unique<miniui::Row>();
+    row->fillBackground = true;
+    row->bgColor = glm::vec4(1, 1, 0, 0.5);
+    row->setMargins({20, 20, 20, 20});
+    row->setSpacing(20);
+    addLabel(row.get(), U"Here"sv);
+    addLabel(row.get(), U"is"sv);
+    addLabel(row.get(), U"some"sv);
+    addLabel(row.get(), U"text"sv);
+    container->addItem(std::move(row));
+
+    addLabel(container, U"Sphinx of black quartz"sv);
+
     initialize();
 }
 
@@ -36,18 +68,18 @@ void Game::render()
 
     const auto mvp = glm::ortho(0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f);
 
-    auto *shaderManager = System::instance().shaderManager();
+    auto &system = System::instance();
+
+    auto *shaderManager = system.shaderManager();
     shaderManager->useProgram(ShaderManager::Flat);
     shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, mvp);
     m_mesh->render(GL_LINE_LOOP);
 
-    m_ui->setTransformMatrix(mvp);
-    m_ui->begin();
-    if (m_ui->beginWindow("The quick brown fox jumps over the lazy dog", mu_Rect{50, 50, 400, 400}))
-    {
-        m_ui->endWindow();
-    }
-    m_ui->end();
+    auto *painter = system.uiPainter();
+    painter->setTransformMatrix(mvp);
+    painter->begin();
+    m_item->render(glm::vec2(20, 20));
+    painter->end();
 }
 
 void Game::update(float /* elapsed */) {}

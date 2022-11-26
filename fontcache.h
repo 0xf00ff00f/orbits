@@ -6,17 +6,20 @@
 #include <glm/glm.hpp>
 #include <stb_truetype.h>
 
-#include <optional>
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <string_view>
 
 struct Pixmap;
+
+namespace miniui
+{
 
 class FontCache
 {
 public:
-    explicit FontCache(TextureAtlas *textureAtlas);
+    FontCache();
     ~FontCache();
 
     bool load(const std::string &ttfPath, int pixelHeight);
@@ -33,6 +36,7 @@ public:
     float ascent() const { return m_ascent; }
     float descent() const { return m_descent; }
     float lineGap() const { return m_lineGap; }
+    float textWidth(std::u32string_view text);
 
 private:
     std::unique_ptr<Glyph> initializeGlyph(int codepoint);
@@ -40,7 +44,6 @@ private:
 
     std::vector<unsigned char> m_ttfBuffer;
     stbtt_fontinfo m_font;
-    TextureAtlas *m_textureAtlas;
     std::unordered_map<int, std::unique_ptr<Glyph>> m_glyphs;
     int m_pixelHeight;
     float m_scale = 0.0f;
@@ -48,3 +51,5 @@ private:
     float m_descent;
     float m_lineGap;
 };
+
+}
