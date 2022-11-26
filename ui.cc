@@ -20,10 +20,10 @@ glm::vec4 asVec4(mu_Color color)
 }
 }
 
-UI::UI(ShaderManager *shaderManager)
-    : m_textureAtlas(new TextureAtlas(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
-    , m_fontCache(new FontCache(m_textureAtlas.get()))
-    , m_spriteBatcher(new SpriteBatcher(shaderManager))
+UI::UI()
+    : m_textureAtlas(std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
+    , m_fontCache(std::make_unique<FontCache>(m_textureAtlas.get()))
+    , m_spriteBatcher(std::make_unique<SpriteBatcher>())
 {
     mu_init(&m_ctx);
     m_ctx.extra = this;

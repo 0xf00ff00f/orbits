@@ -16,7 +16,7 @@ class SpriteBatcher;
 class UI : private NonCopyable
 {
 public:
-    explicit UI(ShaderManager *shaderManager);
+    UI();
     ~UI();
 
     void setTransformMatrix(const glm::mat4 &matrix);

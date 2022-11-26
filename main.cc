@@ -1,5 +1,6 @@
 #include "log.h"
 #include "game.h"
+#include "system.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -29,6 +30,8 @@ int main()
         log("Version: %s\n", glGetString(GL_VERSION));
 
         {
+            System::instance().initialize();
+
             auto game = std::make_unique<Game>();
             game->resize(Width, Height);
 
@@ -38,6 +41,8 @@ int main()
                 glfwSwapBuffers(window.get());
                 glfwPollEvents();
             }
+
+            System::instance().release();
         }
     }
 

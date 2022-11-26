@@ -2,14 +2,14 @@
 #include "abstracttexture.h"
 #include "textureatlas.h"
 #include "log.h"
+#include "system.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <algorithm>
 
-SpriteBatcher::SpriteBatcher(ShaderManager *shaderManager)
-    : m_shaderManager(shaderManager)
-    , m_buffer(gl::Buffer::Type::Vertex, gl::Buffer::Usage::DynamicDraw)
+SpriteBatcher::SpriteBatcher()
+    : m_buffer(gl::Buffer::Type::Vertex, gl::Buffer::Usage::DynamicDraw)
 {
 }
 
@@ -174,12 +174,13 @@ void SpriteBatcher::flush()
                 glDisableVertexAttribArray(colorLocation);
 
             currentProgram = batchProgram;
-            m_shaderManager->useProgram(batchProgram);
-            m_shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, m_transformMatrix);
+            auto *shaderManager = System::instance().shaderManager();
+            shaderManager->useProgram(batchProgram);
+            shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, m_transformMatrix);
             if (currentTexture)
-                m_shaderManager->setUniform(ShaderManager::Uniform::BaseColorTexture, 0);
+                shaderManager->setUniform(ShaderManager::Uniform::BaseColorTexture, 0);
 
-            positionLocation = m_shaderManager->attributeLocation(ShaderManager::Attribute::Position);
+            positionLocation = shaderManager->attributeLocation(ShaderManager::Attribute::Position);
             if (positionLocation != -1)
             {
                 glEnableVertexAttribArray(positionLocation);
@@ -189,7 +190,7 @@ void SpriteBatcher::flush()
 
             if (currentTexture)
             {
-                texCoordLocation = m_shaderManager->attributeLocation(ShaderManager::Attribute::TexCoord);
+                texCoordLocation = shaderManager->attributeLocation(ShaderManager::Attribute::TexCoord);
                 if (texCoordLocation != -1)
                 {
                     glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
@@ -202,7 +203,7 @@ void SpriteBatcher::flush()
                 texCoordLocation = -1;
             }
 
-            colorLocation = m_shaderManager->attributeLocation(ShaderManager::Attribute::Color);
+            colorLocation = shaderManager->attributeLocation(ShaderManager::Attribute::Color);
             if (colorLocation != -1)
             {
                 glVertexAttribPointer(colorLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),

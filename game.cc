@@ -3,6 +3,7 @@
 #include "shadermanager.h"
 #include "ui.h"
 #include "log.h"
+#include "system.h"
 
 #include <GL/glew.h>
 
@@ -11,8 +12,7 @@
 
 Game::Game()
     : m_mesh(std::make_unique<gl::Mesh<Vertex>>())
-    , m_shaderManager(std::make_unique<ShaderManager>())
-    , m_ui(std::make_unique<UI>(m_shaderManager.get()))
+    , m_ui(std::make_unique<UI>())
 {
     initialize();
 }
@@ -36,8 +36,9 @@ void Game::render()
 
     const auto mvp = glm::ortho(0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f);
 
-    m_shaderManager->useProgram(ShaderManager::Flat);
-    m_shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, mvp);
+    auto *shaderManager = System::instance().shaderManager();
+    shaderManager->useProgram(ShaderManager::Flat);
+    shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, mvp);
     m_mesh->render(GL_LINE_LOOP);
 
     m_ui->setTransformMatrix(mvp);

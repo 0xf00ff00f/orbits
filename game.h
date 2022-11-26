@@ -5,7 +5,6 @@
 
 #include <memory>
 
-class ShaderManager;
 class UI;
 
 class Game : private NonCopyable
@@ -30,6 +29,5 @@ private:
         glm::vec4 color;
     };
     std::unique_ptr<gl::Mesh<Vertex>> m_mesh;
-    std::unique_ptr<ShaderManager> m_shaderManager;
     std::unique_ptr<UI> m_ui;
 };

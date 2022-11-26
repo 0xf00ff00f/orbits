@@ -15,7 +15,7 @@ struct PackedPixmap;
 class SpriteBatcher : private NonCopyable
 {
 public:
-    explicit SpriteBatcher(ShaderManager *shaderManager);
+    SpriteBatcher();
     ~SpriteBatcher();
 
     void setTransformMatrix(const glm::mat4 &matrix);
@@ -55,7 +55,6 @@ private:
     static constexpr int GLQuadSize = 6 * GLVertexSize;                   // 6 verts per quad
     static constexpr int MaxQuadsPerBatch = BufferCapacity / GLQuadSize;
 
-    ShaderManager *m_shaderManager;
     std::array<Quad, MaxQuadsPerBatch> m_quads;
     int m_quadCount = 0;
     gl::Buffer m_buffer;

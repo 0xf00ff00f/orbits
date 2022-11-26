@@ -41,6 +41,8 @@ set(SOURCES
     shadermanager.h
     spritebatcher.cc
     spritebatcher.h
+    system.cc
+    system.h
 )
 
 add_executable(game ${SOURCES})
