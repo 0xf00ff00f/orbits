@@ -1,9 +1,16 @@
 #pragma once
 
+#include "textureatlas.h"
+#include "font.h"
+
+#include <glm/glm.hpp>
+
 #include <string_view>
 #include <string>
+#include <vector>
+#include <memory>
 
-#include "fontcache.h"
+class Pixmap;
 
 namespace miniui
 {
@@ -36,9 +43,13 @@ class Label : public Item
 {
 public:
     explicit Label(std::u32string_view text = {});
+    Label(const Font &font, std::u32string_view text);
 
     float width() override { return m_width; }
     float height() override { return m_height; }
+
+    void setFont(const Font &font);
+    Font font() const;
 
     void setText(std::u32string_view text);
     const std::u32string &text() const { return m_text; }
@@ -54,6 +65,7 @@ private:
     void updateSize();
 
     Margins m_margins;
+    Font m_font;
     std::u32string m_text;
     float m_width = 0;
     float m_height = 0;

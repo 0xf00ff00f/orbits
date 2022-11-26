@@ -1,109 +1,47 @@
 #include "fontcache.h"
 
-#include "ioutil.h"
-#include "pixmap.h"
+#include "glyphcache.h"
 #include "log.h"
-#include "system.h"
-#include "painter.h"
+
+#include <cstddef>
 
 namespace miniui
 {
 
-FontCache::FontCache() = default;
+namespace
+{
+std::string fontPath(std::string_view basename)
+{
+    return std::string("assets/fonts/") + std::string(basename) + std::string(".ttf");
+}
+}
 
 FontCache::~FontCache() = default;
 
-bool FontCache::load(const std::string &ttfPath, int pixelHeight)
+std::size_t FontCache::FontKeyHasher::operator()(const FontCache::FontKey &key) const
 {
-    auto buffer = Util::readFile(ttfPath);
-    if (!buffer)
-        return false;
-
-    m_ttfBuffer = std::move(*buffer);
-
-    int result = stbtt_InitFont(&m_font, m_ttfBuffer.data(), stbtt_GetFontOffsetForIndex(m_ttfBuffer.data(), 0));
-    if (result == 0)
-    {
-        return false;
-    }
-
-    m_scale = stbtt_ScaleForPixelHeight(&m_font, pixelHeight);
-
-    int ascent;
-    int descent;
-    int lineGap;
-    stbtt_GetFontVMetrics(&m_font, &ascent, &descent, &lineGap);
-    m_ascent = m_scale * ascent;
-    m_descent = m_scale * descent;
-    m_lineGap = m_scale * lineGap;
-
-    m_pixelHeight = pixelHeight;
-
-    return true;
+    std::size_t hash = 311;
+    hash = hash * 31 + static_cast<std::size_t>(key.pixelHeight);
+    hash = hash * 31 + std::hash<std::string>()(key.name);
+    return hash;
 }
 
-const FontCache::Glyph *FontCache::getGlyph(int codepoint)
+GlyphCache *FontCache::glyphCache(std::string_view name, int pixelHeight)
 {
-    auto it = m_glyphs.find(codepoint);
-    if (it == m_glyphs.end())
-        it = m_glyphs.insert(it, {codepoint, initializeGlyph(codepoint)});
+    FontKey key{std::string(name), pixelHeight};
+    auto it = m_fonts.find(key);
+    if (it == m_fonts.end())
+    {
+        auto glyphCache = std::make_unique<GlyphCache>();
+        const auto path = fontPath(name);
+        if (!glyphCache->load(path, pixelHeight))
+        {
+            log("Failed to load font %s\n", path.c_str());
+            glyphCache.reset();
+        }
+        it = m_fonts.emplace(std::move(key), std::move(glyphCache)).first;
+    }
     return it->second.get();
-}
-
-std::unique_ptr<FontCache::Glyph> FontCache::initializeGlyph(int codepoint)
-{
-    auto *painter = System::instance().uiPainter();
-    auto pm = painter->m_textureAtlas->addPixmap(getCodepointPixmap(codepoint));
-    if (!pm)
-    {
-        log("Couldn't fit glyph %d in texture atlas\n", codepoint);
-        return {};
-    }
-
-    int advanceWidth, leftSideBearing;
-    stbtt_GetCodepointHMetrics(&m_font, codepoint, &advanceWidth, &leftSideBearing);
-
-    int ix0, iy0, ix1, iy1;
-    stbtt_GetCodepointBitmapBox(&m_font, codepoint, m_scale, m_scale, &ix0, &iy0, &ix1, &iy1);
-
-    assert(pm->width == ix1 - ix0);
-    assert(pm->height == iy1 - iy0);
-
-    auto glyph = std::make_unique<Glyph>();
-    glyph->boundingBox = BoxI{{ix0, iy0}, {ix1, iy1}};
-    glyph->advanceWidth = m_scale * advanceWidth;
-    glyph->pixmap = *pm;
-    return glyph;
-}
-
-Pixmap FontCache::getCodepointPixmap(int codepoint) const
-{
-    int ix0, iy0, ix1, iy1;
-    stbtt_GetCodepointBitmapBox(&m_font, codepoint, m_scale, m_scale, &ix0, &iy0, &ix1, &iy1);
-
-    const auto width = ix1 - ix0;
-    const auto height = iy1 - iy0;
-
-    Pixmap pm;
-    pm.width = width;
-    pm.height = height;
-    pm.pixelType = PixelType::Grayscale;
-    pm.pixels.resize(width * height);
-    stbtt_MakeCodepointBitmap(&m_font, pm.pixels.data(), width, height, width, m_scale, m_scale, codepoint);
-
-    return pm;
-}
-
-float FontCache::textWidth(std::u32string_view text)
-{
-    float width = 0;
-    for (auto ch : text)
-    {
-        const auto *g = getGlyph(ch);
-        assert(g);
-        width += g->advanceWidth;
-    }
-    return width;
 }
 
 }

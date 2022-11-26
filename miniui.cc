@@ -2,11 +2,20 @@
 
 #include "system.h"
 #include "painter.h"
+#include "glyphcache.h"
 
 #include <algorithm>
 
 namespace miniui
 {
+namespace
+{
+Font defaultFont()
+{
+    return Font("OpenSans_Regular", 40);
+}
+}
+
 Item::~Item() = default;
 
 void Item::renderBackground(const glm::vec2 &pos, int depth)
@@ -18,8 +27,20 @@ void Item::renderBackground(const glm::vec2 &pos, int depth)
 }
 
 Label::Label(std::u32string_view text)
-    : m_text(text)
+    : Label(defaultFont(), text)
 {
+}
+
+Label::Label(const Font &font, std::u32string_view text)
+    : m_font(font)
+    , m_text(text)
+{
+    updateSize();
+}
+
+void Label::setFont(const Font &font)
+{
+    m_font = font;
     updateSize();
 }
 
@@ -37,15 +58,15 @@ void Label::setMargins(Margins margins)
 
 void Label::updateSize()
 {
-    auto *fontCache = System::instance().uiPainter()->fontCache();
-    m_height = fontCache->pixelHeight() + m_margins.top + m_margins.bottom;
-    m_width = fontCache->textWidth(m_text) + m_margins.left + m_margins.right;
+    m_height = m_font.pixelHeight() + m_margins.top + m_margins.bottom;
+    m_width = m_font.textWidth(m_text) + m_margins.left + m_margins.right;
 }
 
 void Label::render(const glm::vec2 &pos, int depth)
 {
     renderBackground(pos, depth);
     auto *painter = System::instance().uiPainter();
+    painter->setFont(m_font);
     painter->drawText(m_text, pos + glm::vec2(m_margins.left, m_margins.top), color, depth + 1);
 }
 

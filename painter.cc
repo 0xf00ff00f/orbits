@@ -1,8 +1,10 @@
 #include "painter.h"
 
 #include "textureatlas.h"
-#include "fontcache.h"
+#include "glyphcache.h"
 #include "spritebatcher.h"
+#include "fontcache.h"
+#include "font.h"
 #include "log.h"
 
 namespace miniui
@@ -11,20 +13,13 @@ namespace miniui
 namespace
 {
 constexpr auto TextureAtlasPageSize = 512;
-
-std::string fontPath(std::string_view basename)
-{
-    return std::string("assets/fonts/") + std::string(basename);
-}
 }
 
 Painter::Painter()
-    : m_textureAtlas(std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
-    , m_fontCache(std::make_unique<FontCache>())
+    : m_fontCache(std::make_unique<FontCache>())
+    , m_textureAtlas(std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
     , m_spriteBatcher(std::make_unique<SpriteBatcher>())
 {
-    if (!m_fontCache->load("assets/fonts/OpenSans_Regular.ttf", 50))
-        log("Failed to load font\n");
 }
 
 Painter::~Painter() = default;
@@ -39,9 +34,15 @@ glm::mat4 Painter::transformMatrix() const
     return m_spriteBatcher->transformMatrix();
 }
 
+void Painter::setFont(const Font &font)
+{
+    m_font = font.glyphCache();
+}
+
 void Painter::begin()
 {
     m_spriteBatcher->begin();
+    m_font = nullptr;
 }
 
 void Painter::end()
@@ -57,12 +58,18 @@ void Painter::drawRect(const glm::vec2 &topLeft, const glm::vec2 &bottomRight, c
 
 void Painter::drawText(std::u32string_view text, const glm::vec2 &pos, const glm::vec4 &color, int depth)
 {
+    if (!m_font)
+    {
+        log("Font not set?");
+        return;
+    }
+
     m_spriteBatcher->setBatchProgram(ShaderManager::Text);
 
-    auto basePos = glm::vec2(pos.x, pos.y + m_fontCache->ascent());
+    auto basePos = glm::vec2(pos.x, pos.y + m_font->ascent());
     for (auto ch : text)
     {
-        const auto glyph = m_fontCache->getGlyph(ch);
+        const auto glyph = m_font->getGlyph(ch);
         if (!glyph)
             continue;
         const auto topLeft = basePos + glm::vec2(glyph->boundingBox.min);

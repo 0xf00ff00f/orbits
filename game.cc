@@ -23,28 +23,29 @@ Game::Game()
     container->setMargins({10, 10, 10, 10});
     container->setSpacing(5);
 
-    auto addLabel = [](miniui::Container *container, std::u32string_view text) {
+    auto addLabel = [](miniui::Container *container, std::u32string_view text, int fontSize) {
         auto label = std::make_unique<miniui::Label>(text);
         label->fillBackground = true;
         label->bgColor = glm::vec4(0, 1, 0, 0.5);
         label->setMargins({10, 10, 10, 10});
+        label->setFont(miniui::Font("OpenSans_Regular", fontSize));
         container->addItem(std::move(label));
     };
-    addLabel(container, U"The quick brown fox"sv);
-    addLabel(container, U"Lorem ipsum"sv);
+    addLabel(container, U"The quick brown fox"sv, 44);
+    addLabel(container, U"Lorem ipsum"sv, 44);
 
     auto row = std::make_unique<miniui::Row>();
     row->fillBackground = true;
     row->bgColor = glm::vec4(1, 1, 0, 0.5);
     row->setMargins({20, 20, 20, 20});
     row->setSpacing(20);
-    addLabel(row.get(), U"Here"sv);
-    addLabel(row.get(), U"is"sv);
-    addLabel(row.get(), U"some"sv);
-    addLabel(row.get(), U"text"sv);
+    addLabel(row.get(), U"Here"sv, 30);
+    addLabel(row.get(), U"is"sv, 40);
+    addLabel(row.get(), U"some"sv, 50);
+    addLabel(row.get(), U"text"sv, 60);
     container->addItem(std::move(row));
 
-    addLabel(container, U"Sphinx of black quartz"sv);
+    addLabel(container, U"Sphinx of black quartz"sv, 44);
 
     initialize();
 }

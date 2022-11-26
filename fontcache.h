@@ -1,55 +1,36 @@
 #pragma once
 
-#include "textureatlas.h"
-#include "util.h"
+#include "noncopyable.h"
 
-#include <glm/glm.hpp>
-#include <stb_truetype.h>
-
+#include <cstddef>
+#include <string_view>
 #include <string>
 #include <unordered_map>
 #include <memory>
-#include <string_view>
-
-struct Pixmap;
 
 namespace miniui
 {
+class GlyphCache;
 
-class FontCache
+class FontCache : private NonCopyable
 {
 public:
-    FontCache();
     ~FontCache();
 
-    bool load(const std::string &ttfPath, int pixelHeight);
-
-    struct Glyph
-    {
-        BoxI boundingBox;
-        float advanceWidth;
-        PackedPixmap pixmap;
-    };
-    const Glyph *getGlyph(int codepoint);
-
-    int pixelHeight() const { return m_pixelHeight; }
-    float ascent() const { return m_ascent; }
-    float descent() const { return m_descent; }
-    float lineGap() const { return m_lineGap; }
-    float textWidth(std::u32string_view text);
+    GlyphCache *glyphCache(std::string_view fontName, int pixelHeight);
 
 private:
-    std::unique_ptr<Glyph> initializeGlyph(int codepoint);
-    Pixmap getCodepointPixmap(int codepoint) const;
-
-    std::vector<unsigned char> m_ttfBuffer;
-    stbtt_fontinfo m_font;
-    std::unordered_map<int, std::unique_ptr<Glyph>> m_glyphs;
-    int m_pixelHeight;
-    float m_scale = 0.0f;
-    float m_ascent;
-    float m_descent;
-    float m_lineGap;
+    struct FontKey
+    {
+        std::string name;
+        int pixelHeight;
+        bool operator==(const FontKey &other) const { return name == other.name && pixelHeight == other.pixelHeight; }
+    };
+    struct FontKeyHasher
+    {
+        std::size_t operator()(const FontKey &key) const;
+    };
+    std::unordered_map<FontKey, std::unique_ptr<GlyphCache>, FontKeyHasher> m_fonts;
 };
 
 }

@@ -33,8 +33,8 @@ set(SOURCES
     textureatlaspage.h
     textureatlas.cc
     textureatlas.h
-    fontcache.cc
-    fontcache.h
+    glyphcache.cc
+    glyphcache.h
     painter.cc
     painter.h
     shadermanager.cc
@@ -45,6 +45,10 @@ set(SOURCES
     system.h
     miniui.cc
     miniui.h
+    fontcache.cc
+    fontcache.h
+    font.cc
+    font.h
 )
 
 add_executable(game ${SOURCES})
