@@ -166,19 +166,12 @@ void SpriteBatcher::flush()
                                       reinterpret_cast<GLvoid *>(0));
             }
 
-            if (currentTexture)
+            texCoordLocation = shaderManager->attributeLocation(ShaderManager::Attribute::TexCoord);
+            if (texCoordLocation != -1)
             {
-                texCoordLocation = shaderManager->attributeLocation(ShaderManager::Attribute::TexCoord);
-                if (texCoordLocation != -1)
-                {
-                    glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                                          reinterpret_cast<GLvoid *>(2 * sizeof(GLfloat)));
-                    glEnableVertexAttribArray(texCoordLocation);
-                }
-            }
-            else
-            {
-                texCoordLocation = -1;
+                glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                                      reinterpret_cast<GLvoid *>(2 * sizeof(GLfloat)));
+                glEnableVertexAttribArray(texCoordLocation);
             }
 
             colorLocation = shaderManager->attributeLocation(ShaderManager::Attribute::Color);

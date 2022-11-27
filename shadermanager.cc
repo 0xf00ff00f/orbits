@@ -71,6 +71,10 @@ std::unique_ptr<gl::ShaderProgram> loadProgram(ShaderManager::Program id)
         {"decal.vert",
          "decal.frag",
          {ShaderManager::Attribute::Position, ShaderManager::Attribute::TexCoord, ShaderManager::Attribute::Color}},
+        // circle
+        {"circle.vert",
+         "circle.frag",
+         {ShaderManager::Attribute::Position, ShaderManager::Attribute::TexCoord, ShaderManager::Attribute::Color}},
     };
     static_assert(std::extent_v<decltype(programSources)> == ShaderManager::NumPrograms,
                   "expected number of programs to match");

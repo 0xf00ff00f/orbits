@@ -132,8 +132,9 @@ void Game::render()
     glEnable(GL_SCISSOR_TEST);
     painter->begin();
     m_item->render(m_itemOffset);
-    glDisable(GL_SCISSOR_TEST);
+    painter->drawCircle(glm::vec2(800, 80), 60, glm::vec4(1, 0, 0, 1), 1000);
     painter->end();
+    glDisable(GL_SCISSOR_TEST);
 }
 
 void Game::update(float elapsed)

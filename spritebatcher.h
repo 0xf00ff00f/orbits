@@ -34,11 +34,10 @@ public:
 
     void addSprite(const RectF &rect, const glm::vec4 &color, int depth);
     void addSprite(const PackedPixmap &pixmap, const RectF &rect, const glm::vec4 &color, int depth);
-
-private:
     void addSprite(const AbstractTexture *texture, const RectF &rect, const RectF &texRect, const glm::vec4 &color,
                    int depth);
 
+private:
     struct Quad
     {
         ShaderManager::Program program;

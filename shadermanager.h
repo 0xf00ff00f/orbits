@@ -24,6 +24,7 @@ public:
         Flat,
         Text,
         Decal,
+        Circle,
         NumPrograms
     };
     void useProgram(Program program);
