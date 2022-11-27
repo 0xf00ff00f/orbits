@@ -4,6 +4,7 @@
 #include "painter.h"
 #include "glyphcache.h"
 #include "pixmapcache.h"
+#include "log.h"
 
 #include <algorithm>
 
@@ -61,8 +62,7 @@ void Label::updateSize()
 {
     m_height = m_font.pixelHeight() + m_margins.top + m_margins.bottom;
     m_width = m_font.textWidth(m_text) + m_margins.left + m_margins.right;
-    if (m_parentContainer)
-        m_parentContainer->updateLayout();
+    m_resizedEvent.notify(m_width, m_height);
 }
 
 void Label::render(const glm::vec2 &pos, int depth)
@@ -105,8 +105,7 @@ void Image::updateSize()
         m_width += m_pixmap->width;
         m_height += m_pixmap->height;
     }
-    if (m_parentContainer)
-        m_parentContainer->updateLayout();
+    m_resizedEvent.notify(m_width, m_height);
 }
 
 void Image::render(const glm::vec2 &pos, int depth)
@@ -121,9 +120,12 @@ void Image::render(const glm::vec2 &pos, int depth)
 
 void Container::addItem(std::unique_ptr<Item> item)
 {
-    assert(!item->m_parentContainer);
-    item->m_parentContainer = this;
     m_items.push_back(std::move(item));
+    auto resizedConnection = m_items.back()->resizedEvent().connect([this](float width, float height) {
+        log("child resized: %f %f\n", width, height);
+        updateLayout();
+    });
+    m_childResizedConnections.push_back(std::move(resizedConnection));
     updateLayout();
 }
 
@@ -137,12 +139,6 @@ void Container::setSpacing(float spacing)
 {
     m_spacing = spacing;
     updateLayout();
-}
-
-void Container::updateLayout()
-{
-    if (m_parentContainer)
-        m_parentContainer->updateLayout();
 }
 
 void Column::setMinimumWidth(float width)
@@ -164,7 +160,7 @@ void Column::updateLayout()
         m_height += (m_items.size() - 1) * m_spacing;
     m_width += m_margins.left + m_margins.right;
     m_height += m_margins.top + m_margins.bottom;
-    Container::updateLayout();
+    m_resizedEvent.notify(m_width, m_height);
 }
 
 void Column::render(const glm::vec2 &pos, int depth)
@@ -209,7 +205,7 @@ void Row::updateLayout()
         m_width += (m_items.size() - 1) * m_spacing;
     m_width += m_margins.left + m_margins.right;
     m_height += m_margins.top + m_margins.bottom;
-    Container::updateLayout();
+    m_resizedEvent.notify(m_width, m_height);
 }
 
 void Row::render(const glm::vec2 &pos, int depth)

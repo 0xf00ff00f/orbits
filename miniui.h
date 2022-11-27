@@ -2,6 +2,7 @@
 
 #include "textureatlas.h"
 #include "font.h"
+#include "event.h"
 
 #include <glm/glm.hpp>
 
@@ -9,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
 
 class Pixmap;
 
@@ -61,11 +63,15 @@ class Container;
 class Item
 {
 public:
+    using ResizedEvent = Event<std::function<void(float, float)>>;
+
     virtual ~Item();
 
     virtual float width() = 0;
     virtual float height() = 0;
     virtual void render(const glm::vec2 &pos, int depth = 0) = 0;
+
+    ResizedEvent &resizedEvent() { return m_resizedEvent; }
 
     bool fillBackground = false;
     glm::vec4 bgColor;
@@ -74,8 +80,7 @@ public:
 protected:
     void renderBackground(const glm::vec2 &pos, int depth);
 
-    Container *m_parentContainer = nullptr;
-    friend class Container;
+    ResizedEvent m_resizedEvent;
 };
 
 class Label : public Item
@@ -150,12 +155,15 @@ public:
     void setSpacing(float spacing);
     float spacing() const { return m_spacing; }
 
-    virtual void updateLayout();
+    virtual void updateLayout() = 0;
 
 protected:
     std::vector<std::unique_ptr<Item>> m_items;
     Margins m_margins;
     float m_spacing = 0.0f;
+
+private:
+    std::vector<std::unique_ptr<Connection>> m_childResizedConnections;
 };
 
 class Column : public Container
