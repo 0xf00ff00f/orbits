@@ -146,14 +146,14 @@ void Game::onMouseButtonPress(miniui::MouseButtons button)
 {
     m_mouseButtons |= button;
     using namespace miniui;
-    mouseEvent(MouseEvent{MouseEvent::Type::Press, m_mouseButtons, m_mousePosition});
+    mouseEvent(MouseEvent{MouseEvent::Type::Press, button, m_mousePosition});
 }
 
 void Game::onMouseButtonRelease(miniui::MouseButtons button)
 {
     m_mouseButtons &= ~button;
     using namespace miniui;
-    mouseEvent(MouseEvent{MouseEvent::Type::Release, m_mouseButtons, m_mousePosition});
+    mouseEvent(MouseEvent{MouseEvent::Type::Release, button, m_mousePosition});
 }
 
 void Game::onMouseMove(const glm::vec2 &pos)
