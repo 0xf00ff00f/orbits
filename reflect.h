@@ -124,4 +124,4 @@ inline void forEachMember(const T &v, F f)
     f(m5);
 }
 
-}
+} // namespace reflect

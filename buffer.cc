@@ -30,7 +30,7 @@ GLenum toGLUsage(Buffer::Usage usage)
         return GL_STREAM_DRAW;
     }
 }
-}
+} // namespace
 
 Buffer::Buffer(Type type, Usage usage)
     : m_type(toGLTarget(type))
@@ -69,4 +69,4 @@ void Buffer::write(std::size_t offset, std::span<const std::byte> data) const
     glBufferSubData(m_type, offset, data.size(), data.data());
 }
 
-}
+} // namespace gl

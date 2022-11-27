@@ -27,6 +27,6 @@ private:
     std::unique_ptr<Buffer> m_buffer;
 };
 
-}
+} // namespace gl
 
 #include "mesh.inl"

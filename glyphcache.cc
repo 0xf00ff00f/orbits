@@ -94,4 +94,4 @@ Pixmap GlyphCache::codepointPixmap(int codepoint) const
     return pm;
 }
 
-}
+} // namespace miniui

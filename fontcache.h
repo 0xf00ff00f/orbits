@@ -33,4 +33,4 @@ private:
     std::unordered_map<FontKey, std::unique_ptr<GlyphCache>, FontKeyHasher> m_fonts;
 };
 
-}
+} // namespace miniui

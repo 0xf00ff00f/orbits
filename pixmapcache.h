@@ -22,4 +22,4 @@ private:
     std::unordered_map<std::string, std::optional<PackedPixmap>> m_pixmaps;
 };
 
-}
+} // namespace miniui

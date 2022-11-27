@@ -31,4 +31,4 @@ private:
     friend class Painter;
 };
 
-}
+} // namespace miniui

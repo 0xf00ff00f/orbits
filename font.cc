@@ -56,4 +56,4 @@ GlyphCache *Font::glyphCache() const
     return m_glyphCache;
 }
 
-}
+} // namespace miniui

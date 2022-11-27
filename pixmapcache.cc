@@ -13,7 +13,7 @@ std::string pixmapPath(std::string_view source)
 {
     return std::string("assets/images/") + std::string(source);
 }
-}
+} // namespace
 
 PixmapCache::~PixmapCache() = default;
 
@@ -39,4 +39,4 @@ std::optional<PackedPixmap> PixmapCache::pixmap(std::string_view source)
     return it->second;
 }
 
-}
+} // namespace miniui

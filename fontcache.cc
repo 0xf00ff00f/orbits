@@ -14,7 +14,7 @@ std::string fontPath(std::string_view basename)
 {
     return std::string("assets/fonts/") + std::string(basename) + std::string(".ttf");
 }
-}
+} // namespace
 
 FontCache::~FontCache() = default;
 
@@ -44,4 +44,4 @@ GlyphCache *FontCache::glyphCache(std::string_view name, int pixelHeight)
     return it->second.get();
 }
 
-}
+} // namespace miniui

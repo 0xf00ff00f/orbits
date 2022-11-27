@@ -39,4 +39,4 @@ private:
     mutable std::vector<unsigned char> m_data;
 };
 
-}
+} // namespace gl

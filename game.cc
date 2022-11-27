@@ -132,7 +132,7 @@ void Game::render()
     glEnable(GL_SCISSOR_TEST);
     painter->begin();
     m_item->render(m_itemOffset);
-    painter->drawCircle(glm::vec2(800, 80), 60, glm::vec4(1, 0, 0, 1), 1000);
+    painter->drawCircle(glm::vec2(400, 200), 160, glm::vec4(1, 1, 1, 1), 1000);
     painter->end();
     glDisable(GL_SCISSOR_TEST);
 }

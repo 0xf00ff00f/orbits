@@ -128,4 +128,4 @@ void Painter::drawCircle(const glm::vec2 &center, float radius, const glm::vec4 
         m_spriteBatcher->addSprite(nullptr, rect, RectF{{0, 0}, {1, 1}}, color, depth);
     }
 }
-}
+} // namespace miniui

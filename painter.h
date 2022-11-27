@@ -69,4 +69,4 @@ private:
     friend class PixmapCache;
 };
 
-}
+} // namespace miniui

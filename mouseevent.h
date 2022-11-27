@@ -60,4 +60,4 @@ struct MouseEvent
     glm::vec2 position;
 };
 
-}
+} // namespace miniui

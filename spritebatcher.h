@@ -70,4 +70,4 @@ private:
     RectF m_clipRect;
 };
 
-}
+} // namespace gl

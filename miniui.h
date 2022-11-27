@@ -252,4 +252,4 @@ private:
     bool m_dragging = false;
     glm::vec2 m_mousePressPos;
 };
-}
+} // namespace miniui

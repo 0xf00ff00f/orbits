@@ -10,7 +10,7 @@ namespace miniui
 {
 class Item;
 class Label;
-}
+} // namespace miniui
 
 class Game : private NonCopyable
 {

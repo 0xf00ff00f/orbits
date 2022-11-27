@@ -17,7 +17,7 @@ Font defaultFont()
 {
     return Font("OpenSans_Regular", 40);
 }
-}
+} // namespace
 
 Item::~Item() = default;
 
@@ -418,4 +418,4 @@ void ScrollArea::updateSize()
     float width = m_viewportSize.width + m_margins.left + m_margins.right;
     setSize({width, height});
 }
-}
+} // namespace miniui

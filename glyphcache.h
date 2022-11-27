@@ -51,4 +51,4 @@ private:
     float m_lineGap;
 };
 
-}
+} // namespace miniui

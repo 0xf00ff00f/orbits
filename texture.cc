@@ -19,7 +19,7 @@ GLenum toGLInternalFormat(PixelType pixelType)
 {
     return pixelType == PixelType::RGBA ? GL_RGBA : GL_LUMINANCE;
 }
-}
+} // namespace
 
 Texture::Texture(const Pixmap &pixmap)
     : Texture(pixmap.width, pixmap.height, pixmap.pixelType, pixmap.pixels.data())
@@ -76,4 +76,4 @@ void Texture::bind() const
     glBindTexture(Target, m_id);
 }
 
-}
+} // namespace gl
