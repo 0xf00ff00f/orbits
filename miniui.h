@@ -158,12 +158,17 @@ class Column : public Container
 public:
     float width() override { return m_width; }
     float height() override { return m_height; }
+
+    void setMinimumWidth(float width);
+    float minimumWidth() const { return m_minimumWidth; }
+
     void render(const glm::vec2 &pos, int depth = 0) override;
 
 private:
     void updateLayout() override;
 
     float m_width = 0;
+    float m_minimumWidth = 0;
     float m_height = 0;
 };
 
@@ -172,6 +177,10 @@ class Row : public Container
 public:
     float width() override { return m_width; }
     float height() override { return m_height; }
+
+    void setMinimumHeight(float height);
+    float minimumHeight() const { return m_minimumHeight; }
+
     void render(const glm::vec2 &pos, int depth = 0) override;
 
 private:
@@ -179,6 +188,7 @@ private:
 
     float m_width = 0;
     float m_height = 0;
+    float m_minimumHeight;
 };
 
 }

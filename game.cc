@@ -41,6 +41,7 @@ Game::Game()
         row->alignment = miniui::Align::Right;
         row->setMargins({20, 20, 20, 20});
         row->setSpacing(20);
+        row->setMinimumHeight(200);
         row->addItem(makeLabel(U"Here"sv, 30));
         row->addItem(makeLabel(U"is"sv, 40));
         row->addItem(makeLabel(U"some"sv, 50));

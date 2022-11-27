@@ -133,9 +133,15 @@ void Container::setSpacing(float spacing)
     updateLayout();
 }
 
+void Column::setMinimumWidth(float width)
+{
+    m_minimumWidth = width;
+    updateLayout();
+}
+
 void Column::updateLayout()
 {
-    m_width = 0;
+    m_width = m_minimumWidth;
     m_height = 0;
     for (auto &item : m_items)
     {
@@ -172,10 +178,15 @@ void Column::render(const glm::vec2 &pos, int depth)
     }
 }
 
+void Row::setMinimumHeight(float height)
+{
+    m_minimumHeight = height;
+}
+
 void Row::updateLayout()
 {
     m_width = 0;
-    m_height = 0;
+    m_height = m_minimumHeight;
     for (auto &item : m_items)
     {
         m_width += item->width();
@@ -198,9 +209,9 @@ void Row::render(const glm::vec2 &pos, int depth)
             switch (alignment)
             {
             case Align::Top:
-            default:
                 return 0.0f;
             case Align::VCenter:
+            default:
                 return 0.5f * (m_height - (m_margins.top + m_margins.bottom) - item->height());
             case Align::Bottom:
                 return m_height - (m_margins.top + m_margins.bottom) - item->height();
