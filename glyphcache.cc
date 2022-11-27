@@ -4,12 +4,14 @@
 #include "pixmap.h"
 #include "log.h"
 #include "system.h"
-#include "painter.h"
 
 namespace miniui
 {
 
-GlyphCache::GlyphCache() = default;
+GlyphCache::GlyphCache(TextureAtlas *textureAtlas)
+    : m_textureAtlas(textureAtlas)
+{
+}
 
 GlyphCache::~GlyphCache() = default;
 
@@ -52,8 +54,7 @@ const GlyphCache::Glyph *GlyphCache::glyph(int codepoint)
 
 std::unique_ptr<GlyphCache::Glyph> GlyphCache::initializeGlyph(int codepoint)
 {
-    auto *painter = System::instance().uiPainter();
-    auto pm = painter->m_fontTextureAtlas->addPixmap(codepointPixmap(codepoint));
+    auto pm = m_textureAtlas->addPixmap(codepointPixmap(codepoint));
     if (!pm)
     {
         log("Couldn't fit glyph %d in texture atlas\n", codepoint);

@@ -31,7 +31,7 @@ int main()
         log("Version: %s\n", glGetString(GL_VERSION));
 
         {
-            System::instance().initialize();
+            System::initialize();
 
             auto game = std::make_unique<Game>();
 
@@ -81,7 +81,7 @@ int main()
                 glfwPollEvents();
             }
 
-            System::instance().release();
+            System::shutdown();
         }
     }
 

@@ -1,25 +1,38 @@
 #include "system.h"
 
-#include "shadermanager.h"
+#include "fontcache.h"
 #include "painter.h"
+#include "pixmapcache.h"
+#include "shadermanager.h"
+#include "textureatlas.h"
 
-void System::initialize()
+System *System::s_instance = nullptr;
+
+namespace
 {
-    m_shaderManager = new ShaderManager;
-    m_uiPainter = new miniui::Painter;
+constexpr auto TextureAtlasPageSize = 1024;
 }
 
-void System::release()
+bool System::initialize()
 {
-    delete m_uiPainter;
-    m_uiPainter = nullptr;
-
-    delete m_shaderManager;
-    m_shaderManager = nullptr;
+    return true;
 }
 
-System &System::instance()
+void System::shutdown()
 {
-    static System system;
-    return system;
+    delete s_instance;
+    s_instance = nullptr;
 }
+
+System::System()
+    : m_shaderManager(std::make_unique<ShaderManager>())
+    , m_uiPainter(std::make_unique<miniui::Painter>())
+    , m_fontTextureAtlas(
+          std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
+    , m_pixmapTextureAtlas(std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::RGBA))
+    , m_fontCache(std::make_unique<miniui::FontCache>(m_fontTextureAtlas.get()))
+    , m_pixmapCache(std::make_unique<miniui::PixmapCache>(m_pixmapTextureAtlas.get()))
+{
+}
+
+System::~System() = default;

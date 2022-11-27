@@ -2,7 +2,6 @@
 
 #include "glyphcache.h"
 #include "system.h"
-#include "painter.h"
 #include "fontcache.h"
 
 namespace miniui
@@ -50,7 +49,7 @@ GlyphCache *Font::glyphCache() const
 {
     if (!m_glyphCache)
     {
-        auto *fontCache = System::instance().uiPainter()->fontCache();
+        auto *fontCache = System::instance()->fontCache();
         m_glyphCache = fontCache->glyphCache(m_name, m_pixelHeight);
     }
     return m_glyphCache;

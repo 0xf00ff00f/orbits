@@ -152,7 +152,7 @@ void SpriteBatcher::flush()
                 glDisableVertexAttribArray(colorLocation);
 
             currentProgram = batchProgram;
-            auto *shaderManager = System::instance().shaderManager();
+            auto *shaderManager = System::instance()->shaderManager();
             shaderManager->useProgram(batchProgram);
             shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, m_transformMatrix);
             if (currentTexture)

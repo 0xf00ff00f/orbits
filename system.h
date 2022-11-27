@@ -1,24 +1,47 @@
 #pragma once
 
+#include <memory>
+
 class ShaderManager;
+
+class TextureAtlas;
 
 namespace miniui
 {
 class Painter;
+class FontCache;
+class PixmapCache;
+class GlyphCache;
 }
 
 class System
 {
 public:
-    void initialize();
-    void release();
+    static System *instance()
+    {
+        if (!s_instance)
+            s_instance = new System();
+        return s_instance;
+    }
 
-    ShaderManager *shaderManager() const { return m_shaderManager; }
-    miniui::Painter *uiPainter() const { return m_uiPainter; }
+    static bool initialize();
+    static void shutdown();
 
-    static System &instance();
+    ShaderManager *shaderManager() const { return m_shaderManager.get(); }
+    miniui::Painter *uiPainter() const { return m_uiPainter.get(); }
+    miniui::FontCache *fontCache() const { return m_fontCache.get(); }
+    miniui::PixmapCache *pixmapCache() const { return m_pixmapCache.get(); }
 
 private:
-    ShaderManager *m_shaderManager = nullptr;
-    miniui::Painter *m_uiPainter = nullptr;
+    System();
+    ~System();
+
+    static System *s_instance;
+
+    std::unique_ptr<ShaderManager> m_shaderManager;
+    std::unique_ptr<miniui::Painter> m_uiPainter;
+    std::unique_ptr<TextureAtlas> m_fontTextureAtlas;
+    std::unique_ptr<TextureAtlas> m_pixmapTextureAtlas;
+    std::unique_ptr<miniui::FontCache> m_fontCache;
+    std::unique_ptr<miniui::PixmapCache> m_pixmapCache;
 };

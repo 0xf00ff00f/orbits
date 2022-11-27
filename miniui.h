@@ -17,6 +17,7 @@ class Pixmap;
 
 namespace miniui
 {
+class Painter;
 
 enum class Align : unsigned
 {
@@ -83,7 +84,7 @@ public:
     float width() const { return m_size.width; }
     float height() const { return m_size.height; }
 
-    virtual void render(const glm::vec2 &pos, int depth = 0) = 0;
+    virtual void render(Painter *painter, const glm::vec2 &pos, int depth = 0) = 0;
     virtual void mouseEvent(const MouseEvent &event) = 0;
     virtual Item *findItem(const glm::vec2 &pos);
 
@@ -95,7 +96,7 @@ public:
 
 protected:
     void setSize(Size size);
-    void renderBackground(const glm::vec2 &pos, int depth);
+    void renderBackground(Painter *painter, const glm::vec2 &pos, int depth);
 
     Size m_size;
     ResizedEvent m_resizedEvent;
@@ -108,7 +109,7 @@ public:
     Rectangle(Size size);
     Rectangle(float width, float height);
 
-    void render(const glm::vec2 &pos, int depth = 0) override;
+    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
     void mouseEvent(const MouseEvent &event) override;
 
     using Item::setSize;
@@ -134,7 +135,7 @@ public:
     void setMargins(Margins margins);
     Margins margins() const { return m_margins; }
 
-    void render(const glm::vec2 &pos, int depth = 0) override;
+    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
     glm::vec4 color = glm::vec4(0, 0, 0, 1);
 
@@ -160,7 +161,7 @@ public:
     void setMargins(Margins margins);
     Margins margins() const { return m_margins; }
 
-    void render(const glm::vec2 &pos, int depth = 0) override;
+    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
     glm::vec4 color = glm::vec4(1, 1, 1, 1);
 
@@ -176,7 +177,7 @@ class Container : public Item
 {
 public:
     void mouseEvent(const MouseEvent &event) override;
-    void render(const glm::vec2 &pos, int depth = 0) override;
+    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
     Item *findItem(const glm::vec2 &pos) override;
 
     void addItem(std::unique_ptr<Item> item);
@@ -233,7 +234,7 @@ public:
     explicit ScrollArea(std::unique_ptr<Item> viewportClient);
     ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient);
 
-    virtual void render(const glm::vec2 &pos, int depth = 0);
+    virtual void render(Painter *painter, const glm::vec2 &pos, int depth = 0);
     virtual void mouseEvent(const MouseEvent &event);
 
     void setMargins(Margins margins);

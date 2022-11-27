@@ -1,7 +1,5 @@
 #include "pixmapcache.h"
 
-#include "system.h"
-#include "painter.h"
 #include "log.h"
 
 namespace miniui
@@ -15,6 +13,11 @@ std::string pixmapPath(std::string_view source)
 }
 } // namespace
 
+PixmapCache::PixmapCache(TextureAtlas *textureAtlas)
+    : m_textureAtlas(textureAtlas)
+{
+}
+
 PixmapCache::~PixmapCache() = default;
 
 std::optional<PackedPixmap> PixmapCache::pixmap(std::string_view source)
@@ -23,7 +26,7 @@ std::optional<PackedPixmap> PixmapCache::pixmap(std::string_view source)
     auto it = m_pixmaps.find(key);
     if (it == m_pixmaps.end())
     {
-        auto pixmap = [&source]() -> std::optional<PackedPixmap> {
+        auto pixmap = [this, &source]() -> std::optional<PackedPixmap> {
             const auto path = pixmapPath(source);
             Pixmap pm = loadPixmap(path);
             if (!pm)
@@ -31,8 +34,7 @@ std::optional<PackedPixmap> PixmapCache::pixmap(std::string_view source)
                 log("Failed to load image %s\n", path.c_str());
                 return std::nullopt;
             }
-            auto *painter = System::instance().uiPainter();
-            return painter->m_pixmapTextureAtlas->addPixmap(pm);
+            return m_textureAtlas->addPixmap(pm);
         }();
         it = m_pixmaps.emplace(std::move(key), pixmap).first;
     }

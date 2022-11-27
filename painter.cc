@@ -1,10 +1,7 @@
 #include "painter.h"
 
-#include "textureatlas.h"
 #include "glyphcache.h"
 #include "spritebatcher.h"
-#include "fontcache.h"
-#include "pixmapcache.h"
 #include "font.h"
 #include "log.h"
 
@@ -15,18 +12,8 @@
 namespace miniui
 {
 
-namespace
-{
-constexpr auto TextureAtlasPageSize = 1024;
-}
-
 Painter::Painter()
-    : m_fontCache(std::make_unique<FontCache>())
-    , m_pixmapCache(std::make_unique<PixmapCache>())
-    , m_fontTextureAtlas(
-          std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::Grayscale))
-    , m_pixmapTextureAtlas(std::make_unique<TextureAtlas>(TextureAtlasPageSize, TextureAtlasPageSize, PixelType::RGBA))
-    , m_spriteBatcher(std::make_unique<gl::SpriteBatcher>())
+    : m_spriteBatcher(std::make_unique<gl::SpriteBatcher>())
 {
     updateTransformMatrix();
 }

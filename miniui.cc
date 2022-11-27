@@ -21,11 +21,10 @@ Font defaultFont()
 
 Item::~Item() = default;
 
-void Item::renderBackground(const glm::vec2 &pos, int depth)
+void Item::renderBackground(Painter *painter, const glm::vec2 &pos, int depth)
 {
     if (!fillBackground)
         return;
-    auto *painter = System::instance().uiPainter();
     const auto rect = RectF{pos, pos + glm::vec2(width(), height())};
     painter->drawRect(rect, bgColor, depth);
 }
@@ -74,9 +73,9 @@ void Rectangle::setHeight(float height)
     setSize({m_size.width, height});
 }
 
-void Rectangle::render(const glm::vec2 &pos, int depth)
+void Rectangle::render(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(pos, depth);
+    renderBackground(painter, pos, depth);
 }
 
 void Rectangle::mouseEvent(const MouseEvent &event) {}
@@ -130,10 +129,9 @@ void Label::updateSize()
     setSize({width, height});
 }
 
-void Label::render(const glm::vec2 &pos, int depth)
+void Label::render(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(pos, depth);
-    auto *painter = System::instance().uiPainter();
+    renderBackground(painter, pos, depth);
     painter->setFont(m_font);
     painter->drawText(m_text, pos + glm::vec2(m_margins.left, m_margins.top), color, depth + 1);
 }
@@ -157,7 +155,7 @@ void Image::setSource(std::string_view source)
         return;
     m_source = source;
     m_pixmap = [this] {
-        auto *cache = System::instance().uiPainter()->pixmapCache();
+        auto *cache = System::instance()->pixmapCache();
         return cache->pixmap(m_source);
     }();
     updateSize();
@@ -183,12 +181,11 @@ void Image::updateSize()
     setSize({width, height});
 }
 
-void Image::render(const glm::vec2 &pos, int depth)
+void Image::render(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(pos, depth);
+    renderBackground(painter, pos, depth);
     if (m_pixmap)
     {
-        auto *painter = System::instance().uiPainter();
         const auto p = pos + glm::vec2(m_margins.left, m_margins.top);
         const auto rect = RectF{p, p + glm::vec2(m_pixmap->width, m_pixmap->height)};
         painter->drawPixmap(*m_pixmap, rect, color, depth);
@@ -244,11 +241,11 @@ void Container::setSpacing(float spacing)
     updateLayout();
 }
 
-void Container::render(const glm::vec2 &pos, int depth)
+void Container::render(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(pos, depth);
+    renderBackground(painter, pos, depth);
     for (auto &layoutItem : m_layoutItems)
-        layoutItem->item->render(pos + layoutItem->offset, depth + 1);
+        layoutItem->item->render(painter, pos + layoutItem->offset, depth + 1);
 }
 
 void Column::setMinimumWidth(float width)
@@ -358,15 +355,14 @@ ScrollArea::ScrollArea(std::unique_ptr<Item> viewportClient)
 {
 }
 
-void ScrollArea::render(const glm::vec2 &pos, int depth)
+void ScrollArea::render(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(pos, depth);
-    auto *painter = System::instance().uiPainter();
+    renderBackground(painter, pos, depth);
     const auto viewportPos = pos + glm::vec2(m_margins.left, m_margins.top);
     const auto prevClipRect = painter->clipRect();
     const auto viewportRect = RectF{viewportPos, viewportPos + glm::vec2(m_viewportSize.width, m_viewportSize.height)};
     painter->setClipRect(viewportRect);
-    m_viewportClient->render(viewportPos + m_viewportOffset, depth + 1);
+    m_viewportClient->render(painter, viewportPos + m_viewportOffset, depth + 1);
     painter->setClipRect(prevClipRect);
 }
 

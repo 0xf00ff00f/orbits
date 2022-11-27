@@ -19,7 +19,7 @@ namespace miniui
 class GlyphCache
 {
 public:
-    GlyphCache();
+    explicit GlyphCache(TextureAtlas *textureAtlas);
     ~GlyphCache();
 
     bool load(const std::string &ttfPath, int pixelHeight);
@@ -41,6 +41,7 @@ private:
     std::unique_ptr<Glyph> initializeGlyph(int codepoint);
     Pixmap codepointPixmap(int codepoint) const;
 
+    TextureAtlas *m_textureAtlas;
     std::vector<unsigned char> m_ttfBuffer;
     stbtt_fontinfo m_font;
     std::unordered_map<int, std::unique_ptr<Glyph>> m_glyphs;

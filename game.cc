@@ -107,7 +107,7 @@ void Game::resize(int width, int height)
 {
     m_width = width;
     m_height = height;
-    System::instance().uiPainter()->setWindowSize(width, height);
+    System::instance()->uiPainter()->setWindowSize(width, height);
 }
 
 void Game::render()
@@ -121,17 +121,17 @@ void Game::render()
 
     const auto mvp = glm::ortho(0.0f, static_cast<float>(m_width), static_cast<float>(m_height), 0.0f);
 
-    auto &system = System::instance();
+    auto *system = System::instance();
 
-    auto *shaderManager = system.shaderManager();
+    auto *shaderManager = system->shaderManager();
     shaderManager->useProgram(ShaderManager::Flat);
     shaderManager->setUniform(ShaderManager::Uniform::ModelViewProjection, mvp);
     m_mesh->render(GL_LINE_LOOP);
 
-    auto *painter = system.uiPainter();
     glEnable(GL_SCISSOR_TEST);
+    auto *painter = system->uiPainter();
     painter->begin();
-    m_item->render(m_itemOffset);
+    m_item->render(painter, m_itemOffset);
     painter->drawCircle(glm::vec2(400, 200), 160, glm::vec4(1, 1, 1, 1), 1000);
     painter->end();
     glDisable(GL_SCISSOR_TEST);

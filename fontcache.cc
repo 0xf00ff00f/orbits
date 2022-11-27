@@ -16,6 +16,11 @@ std::string fontPath(std::string_view basename)
 }
 } // namespace
 
+FontCache::FontCache(TextureAtlas *textureAtlas)
+    : m_textureAtlas(textureAtlas)
+{
+}
+
 FontCache::~FontCache() = default;
 
 std::size_t FontCache::FontKeyHasher::operator()(const FontCache::FontKey &key) const
@@ -32,7 +37,7 @@ GlyphCache *FontCache::glyphCache(std::string_view name, int pixelHeight)
     auto it = m_fonts.find(key);
     if (it == m_fonts.end())
     {
-        auto glyphCache = std::make_unique<GlyphCache>();
+        auto glyphCache = std::make_unique<GlyphCache>(m_textureAtlas);
         const auto path = fontPath(name);
         if (!glyphCache->load(path, pixelHeight))
         {

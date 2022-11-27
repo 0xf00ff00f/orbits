@@ -2,11 +2,15 @@
 
 #include "noncopyable.h"
 
+#include "glyphcache.h"
+
 #include <cstddef>
 #include <string_view>
 #include <string>
 #include <unordered_map>
 #include <memory>
+
+class TextureAtlas;
 
 namespace miniui
 {
@@ -15,11 +19,13 @@ class GlyphCache;
 class FontCache : private NonCopyable
 {
 public:
+    explicit FontCache(TextureAtlas *textureAtlas);
     ~FontCache();
 
     GlyphCache *glyphCache(std::string_view fontName, int pixelHeight);
 
 private:
+    TextureAtlas *m_textureAtlas;
     struct FontKey
     {
         std::string name;
