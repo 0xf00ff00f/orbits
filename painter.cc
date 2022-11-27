@@ -71,7 +71,7 @@ void Painter::drawText(std::u32string_view text, const glm::vec2 &pos, const glm
 {
     if (!m_font)
     {
-        log("Font not set?");
+        log("Font not set?\n");
         return;
     }
 
