@@ -2,6 +2,7 @@
 
 #include "system.h"
 #include "painter.h"
+#include "log.h"
 
 namespace miniui
 {
@@ -23,9 +24,13 @@ std::optional<PackedPixmap> PixmapCache::pixmap(std::string_view source)
     if (it == m_pixmaps.end())
     {
         auto pixmap = [&source]() -> std::optional<PackedPixmap> {
-            Pixmap pm = loadPixmap(pixmapPath(source));
+            const auto path = pixmapPath(source);
+            Pixmap pm = loadPixmap(path);
             if (!pm)
+            {
+                log("Failed to load image %s\n", path.c_str());
                 return std::nullopt;
+            }
             auto *painter = System::instance().uiPainter();
             return painter->m_pixmapTextureAtlas->addPixmap(pm);
         }();
