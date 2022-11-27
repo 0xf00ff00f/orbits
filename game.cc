@@ -10,6 +10,7 @@
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <memory>
 
 Game::Game()
     : m_mesh(std::make_unique<gl::Mesh<Vertex>>())
@@ -60,19 +61,21 @@ Game::Game()
 
     {
         auto row = std::make_unique<miniui::Row>();
+        row->fillBackground = true;
+        row->bgColor = glm::vec4(0, 0, 0.5, 1);
         row->setSpacing(30);
 
         row->addItem(std::make_unique<miniui::Image>("peppers.jpg"));
 
-        auto l0 = makeLabel(U"Hello"sv, 60);
+        auto l0 = makeLabel(U"click"sv, 60);
         l0->alignment = miniui::Align::Bottom;
         row->addItem(std::move(l0));
 
-        auto l1 = makeLabel(U"Hello"sv, 60);
+        auto l1 = makeLabel(U"here"sv, 60);
         l1->alignment = miniui::Align::VCenter;
         row->addItem(std::move(l1));
 
-        auto l2 = makeLabel(U"Hello"sv, 60);
+        auto l2 = makeLabel(U"plos"sv, 60);
         l2->alignment = miniui::Align::Top;
         row->addItem(std::move(l2));
 
@@ -81,7 +84,12 @@ Game::Game()
         m_counterLabel = l3.get();
         row->addItem(std::move(l3));
 
-        container->addItem(std::move(row));
+        auto scrollArea = std::make_unique<miniui::ScrollArea>(std::move(row));
+        scrollArea->fillBackground = true;
+        scrollArea->bgColor = glm::vec4(0.5, 0, 0, 1);
+        scrollArea->setViewportSize({400, 200});
+
+        container->addItem(std::move(scrollArea));
     }
 
     {
@@ -99,6 +107,7 @@ void Game::resize(int width, int height)
 {
     m_width = width;
     m_height = height;
+    System::instance().uiPainter()->setWindowSize(width, height);
 }
 
 void Game::render()
@@ -120,9 +129,10 @@ void Game::render()
     m_mesh->render(GL_LINE_LOOP);
 
     auto *painter = system.uiPainter();
-    painter->setTransformMatrix(mvp);
+    glEnable(GL_SCISSOR_TEST);
     painter->begin();
     m_item->render(m_itemOffset);
+    glDisable(GL_SCISSOR_TEST);
     painter->end();
 }
 
@@ -154,32 +164,39 @@ void Game::initialize()
 void Game::onMouseButtonPress(miniui::MouseButtons button)
 {
     m_mouseButtons |= button;
-    using namespace miniui;
-    mouseEvent(MouseEvent{MouseEvent::Type::Press, button, m_mousePosition});
+    if (button == miniui::MouseButtons::Left)
+    {
+        assert(m_mouseGrabber == nullptr);
+        m_mouseGrabber = m_item->findItem(m_mousePosition - m_itemOffset);
+        if (m_mouseGrabber)
+        {
+            using namespace miniui;
+            const auto event = MouseEvent{MouseEvent::Type::Press, button, m_mousePosition - m_itemOffset};
+            m_mouseGrabber->mouseEvent(event);
+        }
+    }
 }
 
 void Game::onMouseButtonRelease(miniui::MouseButtons button)
 {
     m_mouseButtons &= ~button;
-    using namespace miniui;
-    mouseEvent(MouseEvent{MouseEvent::Type::Release, button, m_mousePosition});
+    if (button == miniui::MouseButtons::Left)
+    {
+        assert(m_mouseGrabber != nullptr);
+        using namespace miniui;
+        const auto event = MouseEvent{MouseEvent::Type::Release, button, m_mousePosition - m_itemOffset};
+        m_mouseGrabber->mouseEvent(event);
+        m_mouseGrabber = nullptr;
+    }
 }
 
 void Game::onMouseMove(const glm::vec2 &pos)
 {
     m_mousePosition = pos;
-    using namespace miniui;
-    mouseEvent(MouseEvent{MouseEvent::Type::Move, m_mouseButtons, m_mousePosition});
-}
-
-void Game::mouseEvent(const miniui::MouseEvent &event)
-{
-    const auto &p = event.position;
-    if (p.x >= m_itemOffset.x && p.x < m_itemOffset.x + m_item->width() && p.y >= m_itemOffset.y &&
-        p.y < m_itemOffset.y + m_item->height())
+    if (m_mouseGrabber)
     {
-        miniui::MouseEvent itemEvent = event;
-        itemEvent.position -= m_itemOffset;
-        m_item->mouseEvent(itemEvent);
+        using namespace miniui;
+        const auto event = MouseEvent{MouseEvent::Type::Move, m_mouseButtons, m_mousePosition - m_itemOffset};
+        m_mouseGrabber->mouseEvent(event);
     }
 }

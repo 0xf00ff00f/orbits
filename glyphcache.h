@@ -26,7 +26,7 @@ public:
 
     struct Glyph
     {
-        BoxI boundingBox;
+        RectI boundingBox;
         float advanceWidth;
         PackedPixmap pixmap;
     };

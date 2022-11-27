@@ -57,11 +57,17 @@ struct Margins
     float bottom = 0;
     float left = 0;
     float right = 0;
-
     bool operator==(const Margins &other) const
     {
         return top == other.top && bottom == other.bottom && left == other.left && right == other.right;
     }
+};
+
+struct Size
+{
+    float width = 0;
+    float height = 0;
+    bool operator==(const Size &other) const { return width == other.width && height == other.height; }
 };
 
 class Container;
@@ -69,15 +75,17 @@ class Container;
 class Item
 {
 public:
-    using ResizedEvent = Event<std::function<void(float, float)>>;
+    using ResizedEvent = Event<std::function<void(Size)>>;
 
     virtual ~Item();
 
-    float width() const { return m_width; }
-    float height() const { return m_height; }
+    Size size() const { return m_size; }
+    float width() const { return m_size.width; }
+    float height() const { return m_size.height; }
 
     virtual void render(const glm::vec2 &pos, int depth = 0) = 0;
     virtual void mouseEvent(const MouseEvent &event) = 0;
+    virtual Item *findItem(const glm::vec2 &pos);
 
     ResizedEvent &resizedEvent() { return m_resizedEvent; }
 
@@ -86,11 +94,10 @@ public:
     Align alignment = Align::VCenter | Align::Left;
 
 protected:
-    void setSize(float width, float height);
+    void setSize(Size size);
     void renderBackground(const glm::vec2 &pos, int depth);
 
-    float m_width = 0;
-    float m_height = 0;
+    Size m_size;
     ResizedEvent m_resizedEvent;
 };
 
@@ -98,12 +105,14 @@ class Rectangle : public Item
 {
 public:
     Rectangle();
+    Rectangle(Size size);
     Rectangle(float width, float height);
 
     void render(const glm::vec2 &pos, int depth = 0) override;
     void mouseEvent(const MouseEvent &event) override;
 
     using Item::setSize;
+    void setSize(float width, float height);
     void setWidth(float width);
     void setHeight(float height);
 };
@@ -168,6 +177,7 @@ class Container : public Item
 public:
     void mouseEvent(const MouseEvent &event) override;
     void render(const glm::vec2 &pos, int depth = 0) override;
+    Item *findItem(const glm::vec2 &pos) override;
 
     void addItem(std::unique_ptr<Item> item);
 
@@ -217,4 +227,29 @@ private:
     float m_minimumHeight = 0;
 };
 
+class ScrollArea : public Item
+{
+public:
+    explicit ScrollArea(std::unique_ptr<Item> viewportClient);
+    ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient);
+
+    virtual void render(const glm::vec2 &pos, int depth = 0);
+    virtual void mouseEvent(const MouseEvent &event);
+
+    void setMargins(Margins margins);
+    Margins margins() const { return m_margins; }
+
+    void setViewportSize(Size size);
+    Size viewportSize() const;
+
+private:
+    void updateSize();
+
+    std::unique_ptr<Item> m_viewportClient;
+    Margins m_margins;
+    Size m_viewportSize;
+    glm::vec2 m_viewportOffset = glm::vec2(0, 0);
+    bool m_dragging = false;
+    glm::vec2 m_mousePressPos;
+};
 }

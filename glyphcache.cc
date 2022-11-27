@@ -70,7 +70,7 @@ std::unique_ptr<GlyphCache::Glyph> GlyphCache::initializeGlyph(int codepoint)
     assert(pm->height == iy1 - iy0);
 
     auto glyph = std::make_unique<Glyph>();
-    glyph->boundingBox = BoxI{{ix0, iy0}, {ix1, iy1}};
+    glyph->boundingBox = RectI{{ix0, iy0}, {ix1, iy1}};
     glyph->advanceWidth = m_scale * advanceWidth;
     glyph->pixmap = *pm;
     return glyph;

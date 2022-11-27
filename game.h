@@ -28,7 +28,6 @@ public:
 
 private:
     void initialize();
-    void mouseEvent(const miniui::MouseEvent &mouseEvent);
 
     int m_width = 0;
     int m_height = 0;
@@ -44,5 +43,6 @@ private:
     std::unique_ptr<miniui::Item> m_item;
     glm::vec2 m_itemOffset = glm::vec2(20, 20);
     miniui::Label *m_counterLabel;
+    miniui::Item *m_mouseGrabber = nullptr;
     float m_time = 0.0f;
 };

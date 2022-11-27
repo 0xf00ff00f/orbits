@@ -8,8 +8,11 @@
 
 #include <algorithm>
 
+namespace gl
+{
+
 SpriteBatcher::SpriteBatcher()
-    : m_buffer(gl::Buffer::Type::Vertex, gl::Buffer::Usage::DynamicDraw)
+    : m_buffer(Buffer::Type::Vertex, Buffer::Usage::DynamicDraw)
 {
 }
 
@@ -20,19 +23,9 @@ void SpriteBatcher::setTransformMatrix(const glm::mat4 &matrix)
     m_transformMatrix = matrix;
 }
 
-glm::mat4 SpriteBatcher::transformMatrix() const
-{
-    return m_transformMatrix;
-}
-
 void SpriteBatcher::setBatchProgram(ShaderManager::Program program)
 {
     m_batchProgram = program;
-}
-
-ShaderManager::Program SpriteBatcher::batchProgram() const
-{
-    return m_batchProgram;
 }
 
 void SpriteBatcher::begin()
@@ -40,20 +33,17 @@ void SpriteBatcher::begin()
     m_quadCount = 0;
 }
 
-void SpriteBatcher::addSprite(const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &color, int depth)
+void SpriteBatcher::addSprite(const RectF &rect, const glm::vec4 &color, int depth)
 {
-    addSprite(nullptr, {topLeft, {}}, {bottomRight, {}}, color, depth);
+    addSprite(nullptr, rect, {}, color, depth);
 }
 
-void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight,
-                              const glm::vec4 &color, int depth)
+void SpriteBatcher::addSprite(const PackedPixmap &pixmap, const RectF &rect, const glm::vec4 &color, int depth)
 {
-    const auto &topLeftUV = pixmap.texCoord.min;
-    const auto &bottomRightUV = pixmap.texCoord.max;
-    addSprite(pixmap.texture, {topLeft, topLeftUV}, {bottomRight, bottomRightUV}, color, depth);
+    addSprite(pixmap.texture, rect, pixmap.texCoord, color, depth);
 }
 
-void SpriteBatcher::addSprite(const AbstractTexture *texture, const PositionUV &topLeft, const PositionUV &bottomRight,
+void SpriteBatcher::addSprite(const AbstractTexture *texture, const RectF &rect, const RectF &texRect,
                               const glm::vec4 &color, int depth)
 {
     if (m_quadCount == MaxQuadsPerBatch)
@@ -62,8 +52,8 @@ void SpriteBatcher::addSprite(const AbstractTexture *texture, const PositionUV &
     auto &quad = m_quads[m_quadCount++];
     quad.texture = texture;
     quad.program = m_batchProgram;
-    quad.topLeft = topLeft;
-    quad.bottomRight = bottomRight;
+    quad.rect = rect;
+    quad.texRect = texRect;
     quad.color = color;
     quad.depth = depth;
 }
@@ -128,11 +118,11 @@ void SpriteBatcher::flush()
                 *data++ = color.w;
             };
 
-            const auto &p0 = quadPtr->topLeft.position;
-            const auto &t0 = quadPtr->topLeft.texCoord;
+            const auto &p0 = quadPtr->rect.min;
+            const auto &t0 = quadPtr->texRect.min;
 
-            const auto &p1 = quadPtr->bottomRight.position;
-            const auto &t1 = quadPtr->bottomRight.texCoord;
+            const auto &p1 = quadPtr->rect.max;
+            const auto &t1 = quadPtr->texRect.max;
 
             emitVertex({p0.x, p0.y}, {t0.x, t0.y});
             emitVertex({p1.x, p0.y}, {t1.x, t0.y});
@@ -214,4 +204,6 @@ void SpriteBatcher::flush()
         glDisableVertexAttribArray(colorLocation);
 
     m_quadCount = 0;
+}
+
 }

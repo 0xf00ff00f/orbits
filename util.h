@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 
 template<typename Point>
-struct Box
+struct Rect
 {
     Point min = Point(0);
     Point max = Point(0);
@@ -29,39 +29,50 @@ struct Box
         min = p - size;
     }
 
-    Box &operator+=(const Point &rhs)
+    Rect &operator+=(const Point &rhs)
     {
         min += rhs;
         max += rhs;
         return *this;
     }
 
-    Box &operator|=(const Box &rhs)
+    Rect &operator|=(const Rect &rhs)
     {
         min = glm::min(min, rhs.min);
         max = glm::max(max, rhs.max);
         return *this;
     }
 
-    bool contains(const Point &p) { return p.x >= min.x && p.x < max.x && p.y >= min.y && p.y < max.y; }
+    bool operator==(const Rect &other) { return min == other.min && max == other.max; }
+
+    bool contains(const Point &p) const { return p.x >= min.x && p.x < max.x && p.y >= min.y && p.y < max.y; }
+
+    bool intersects(const Rect &other) const
+    {
+        if (min.x >= other.max.x || other.min.x >= max.x)
+            return false;
+        if (min.y >= other.max.y || other.min.y >= max.y)
+            return false;
+        return true;
+    }
 };
 
 template<typename Point>
-inline Box<Point> operator+(Box<Point> lhs, const Point &rhs)
+inline Rect<Point> operator+(Rect<Point> lhs, const Point &rhs)
 {
     lhs += rhs;
     return lhs;
 }
 
 template<typename Point>
-inline Box<Point> operator|(Box<Point> lhs, const Box<Point> &rhs)
+inline Rect<Point> operator|(Rect<Point> lhs, const Rect<Point> &rhs)
 {
     lhs |= rhs;
     return lhs;
 }
 
-using BoxF = Box<glm::vec2>;
-using BoxI = Box<glm::ivec2>;
+using RectF = Rect<glm::vec2>;
+using RectI = Rect<glm::ivec2>;
 
 template<typename Point>
 using Quad = std::array<Point, 4>;

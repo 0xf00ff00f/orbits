@@ -4,25 +4,20 @@
 
 #include <cassert>
 
-namespace
-{
-struct Rect
-{
-    int x, y;
-    int width, height;
-};
-
-} // namespace
-
 struct TextureAtlasPage::Node
 {
+    struct Rect
+    {
+        int x, y;
+        int width, height;
+    };
     Rect rect;
     std::unique_ptr<Node> left, right;
     bool used;
     std::optional<Rect> insert(int width, int height);
 };
 
-std::optional<Rect> TextureAtlasPage::Node::insert(int width, int height)
+std::optional<TextureAtlasPage::Node::Rect> TextureAtlasPage::Node::insert(int width, int height)
 {
     if (used)
     {
@@ -90,7 +85,7 @@ const Pixmap *TextureAtlasPage::pixmap() const
     return &m_pixmap;
 }
 
-std::optional<BoxF> TextureAtlasPage::insert(const Pixmap &pixmap)
+std::optional<RectF> TextureAtlasPage::insert(const Pixmap &pixmap)
 {
     constexpr auto Margin = 1;
 
@@ -125,5 +120,5 @@ std::optional<BoxF> TextureAtlasPage::insert(const Pixmap &pixmap)
     const auto duv = glm::vec2(rect->width - 2 * Margin, rect->height - 2 * Margin) / textureSize;
     const auto uvMax = uvMin + duv;
 
-    return BoxF{uvMin, uvMax};
+    return RectF{uvMin, uvMax};
 }

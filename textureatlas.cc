@@ -41,7 +41,7 @@ std::optional<PackedPixmap> TextureAtlas::addPixmap(const Pixmap &pm)
         return std::nullopt;
     }
 
-    std::optional<BoxF> texCoord;
+    std::optional<RectF> texCoord;
     LazyTexture *texture = nullptr;
 
     for (auto &entry : m_pages)

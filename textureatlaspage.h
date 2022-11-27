@@ -19,7 +19,7 @@ public:
 
     const Pixmap *pixmap() const;
 
-    std::optional<BoxF> insert(const Pixmap &pixmap);
+    std::optional<RectF> insert(const Pixmap &pixmap);
 
 private:
     Pixmap m_pixmap;

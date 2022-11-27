@@ -7,6 +7,7 @@
 #include "log.h"
 
 #include <algorithm>
+#include <memory>
 
 namespace miniui
 {
@@ -25,36 +26,52 @@ void Item::renderBackground(const glm::vec2 &pos, int depth)
     if (!fillBackground)
         return;
     auto *painter = System::instance().uiPainter();
-    painter->drawRect(pos, pos + glm::vec2(width(), height()), bgColor, depth);
+    const auto rect = RectF{pos, pos + glm::vec2(width(), height())};
+    painter->drawRect(rect, bgColor, depth);
 }
 
-void Item::setSize(float width, float height)
+void Item::setSize(Size size)
 {
-    if (width == m_width && height == m_height)
+    if (size == m_size)
         return;
-    m_width = width;
-    m_height = height;
-    m_resizedEvent.notify(m_width, m_height);
+    m_size = size;
+    m_resizedEvent.notify(m_size);
+}
+
+Item *Item::findItem(const glm::vec2 &pos)
+{
+    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
+    return rect.contains(pos) ? this : nullptr;
 }
 
 Rectangle::Rectangle()
-    : Rectangle(0.0f, 0.0f)
+    : Rectangle(Size{})
 {
 }
 
 Rectangle::Rectangle(float width, float height)
+    : Rectangle(Size{width, height})
 {
-    setSize(width, height);
+}
+
+Rectangle::Rectangle(Size size)
+{
+    setSize(size);
+}
+
+void Rectangle::setSize(float width, float height)
+{
+    setSize({width, height});
 }
 
 void Rectangle::setWidth(float width)
 {
-    setSize(width, m_height);
+    setSize({width, m_size.height});
 }
 
 void Rectangle::setHeight(float height)
 {
-    setSize(m_width, height);
+    setSize({m_size.width, height});
 }
 
 void Rectangle::render(const glm::vec2 &pos, int depth)
@@ -80,7 +97,6 @@ void Label::mouseEvent(const MouseEvent &event)
 {
     if (event.type == MouseEvent::Type::Press)
         log("**** clicked label %s\n", std::string(m_text.begin(), m_text.end()).c_str());
-    ;
 }
 
 void Label::setFont(const Font &font)
@@ -111,7 +127,7 @@ void Label::updateSize()
 {
     const float height = m_font.pixelHeight() + m_margins.top + m_margins.bottom;
     const float width = m_font.textWidth(m_text) + m_margins.left + m_margins.right;
-    setSize(width, height);
+    setSize({width, height});
 }
 
 void Label::render(const glm::vec2 &pos, int depth)
@@ -164,7 +180,7 @@ void Image::updateSize()
         width += m_pixmap->width;
         height += m_pixmap->height;
     }
-    setSize(width, height);
+    setSize({width, height});
 }
 
 void Image::render(const glm::vec2 &pos, int depth)
@@ -173,30 +189,38 @@ void Image::render(const glm::vec2 &pos, int depth)
     if (m_pixmap)
     {
         auto *painter = System::instance().uiPainter();
-        painter->drawPixmap(*m_pixmap, pos, pos + glm::vec2(m_pixmap->width, m_pixmap->height), color, depth);
+        const auto p = pos + glm::vec2(m_margins.left, m_margins.top);
+        const auto rect = RectF{p, p + glm::vec2(m_pixmap->width, m_pixmap->height)};
+        painter->drawPixmap(*m_pixmap, rect, color, depth);
     }
 }
 
-void Container::mouseEvent(const MouseEvent &event)
+Item *Container::findItem(const glm::vec2 &pos)
 {
-    const auto &p = event.position;
+    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
+    if (!rect.contains(pos))
+        return nullptr;
     for (auto &layoutItem : m_layoutItems)
     {
         const auto &item = layoutItem->item;
         const auto &offset = layoutItem->offset;
-        if (p.x >= offset.x && p.x < offset.x + item->width() && p.y >= offset.y && p.y < offset.y + item->height())
-        {
-            MouseEvent itemEvent = event;
-            itemEvent.position -= offset;
-            item->mouseEvent(itemEvent);
-        }
+        const auto childRect = RectF{layoutItem->offset, layoutItem->offset + glm::vec2(item->width(), item->height())};
+        if (childRect.contains(pos))
+            return item->findItem(pos - offset);
     }
+    return this;
+}
+
+void Container::mouseEvent(const MouseEvent &event)
+{
+    if (event.type == MouseEvent::Type::Press)
+        log("**** clicked container\n");
 }
 
 void Container::addItem(std::unique_ptr<Item> item)
 {
-    auto resizedConnection = item->resizedEvent().connect([this](float width, float height) {
-        log("child resized: %f %f\n", width, height);
+    auto resizedConnection = item->resizedEvent().connect([this](Size size) {
+        log("child resized: %f %f\n", size.width, size.height);
         updateLayout();
     });
     m_layoutItems.emplace_back(new LayoutItem{{}, std::move(item)});
@@ -250,7 +274,7 @@ void Column::updateLayout()
         height += (m_layoutItems.size() - 1) * m_spacing;
     width += m_margins.left + m_margins.right;
     height += m_margins.top + m_margins.bottom;
-    setSize(width, height);
+    setSize({width, height});
 
     // update item offsets
     auto p = glm::vec2(m_margins.left, m_margins.top);
@@ -258,15 +282,16 @@ void Column::updateLayout()
     {
         const float offset = [this, &item = layoutItem->item] {
             const auto alignment = item->alignment & (Align::Left | Align::HCenter | Align::Right);
+            const auto contentWidth = m_size.width - (m_margins.left + m_margins.right);
             switch (alignment)
             {
             case Align::Left:
             default:
                 return 0.0f;
             case Align::HCenter:
-                return 0.5f * (m_width - (m_margins.left + m_margins.right) - item->width());
+                return 0.5f * (contentWidth - item->width());
             case Align::Right:
-                return m_width - (m_margins.left + m_margins.right) - item->width();
+                return contentWidth - item->width();
             }
         }();
         layoutItem->offset = p + glm::vec2(offset, 0.0f);
@@ -297,13 +322,14 @@ void Row::updateLayout()
         width += (m_layoutItems.size() - 1) * m_spacing;
     width += m_margins.left + m_margins.right;
     height += m_margins.top + m_margins.bottom;
-    setSize(width, height);
+    setSize({width, height});
 
     // update item offsets
     auto p = glm::vec2(m_margins.left, m_margins.top);
     for (auto &layoutItem : m_layoutItems)
     {
         const float offset = [this, &item = layoutItem->item] {
+            const auto contentHeight = m_size.height - (m_margins.top + m_margins.bottom);
             const auto alignment = item->alignment & (Align::Top | Align::VCenter | Align::Bottom);
             switch (alignment)
             {
@@ -311,9 +337,9 @@ void Row::updateLayout()
                 return 0.0f;
             case Align::VCenter:
             default:
-                return 0.5f * (m_height - (m_margins.top + m_margins.bottom) - item->height());
+                return 0.5f * (contentHeight - item->height());
             case Align::Bottom:
-                return m_height - (m_margins.top + m_margins.bottom) - item->height();
+                return contentHeight - item->height();
             }
         }();
         layoutItem->offset = p + glm::vec2(0.0f, offset);
@@ -321,4 +347,75 @@ void Row::updateLayout()
     }
 }
 
+ScrollArea::ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient)
+    : m_viewportClient(std::move(viewportClient))
+{
+    updateSize();
+}
+
+ScrollArea::ScrollArea(std::unique_ptr<Item> viewportClient)
+    : ScrollArea(0, 0, std::move(viewportClient))
+{
+}
+
+void ScrollArea::render(const glm::vec2 &pos, int depth)
+{
+    renderBackground(pos, depth);
+    auto *painter = System::instance().uiPainter();
+    const auto viewportPos = pos + glm::vec2(m_margins.left, m_margins.top);
+    const auto prevClipRect = painter->clipRect();
+    const auto viewportRect = RectF{viewportPos, viewportPos + glm::vec2(m_viewportSize.width, m_viewportSize.height)};
+    painter->setClipRect(viewportRect);
+    m_viewportClient->render(viewportPos + m_viewportOffset, depth + 1);
+    painter->setClipRect(prevClipRect);
+}
+
+void ScrollArea::mouseEvent(const MouseEvent &event)
+{
+    switch (event.type)
+    {
+    case MouseEvent::Type::Press:
+        m_dragging = true;
+        m_mousePressPos = event.position;
+        break;
+    case MouseEvent::Type::Release:
+        m_dragging = false;
+        break;
+    case MouseEvent::Type::Move:
+        if (m_dragging)
+        {
+            const auto offset = event.position - m_mousePressPos;
+            m_viewportOffset += offset;
+            m_viewportOffset =
+                glm::max(m_viewportOffset, glm::vec2(m_viewportSize.width - m_viewportClient->width(),
+                                                     m_viewportSize.height - m_viewportClient->height()));
+            m_viewportOffset = glm::min(m_viewportOffset, glm::vec2(0, 0));
+            m_mousePressPos = event.position;
+        }
+        break;
+    }
+}
+
+void ScrollArea::setMargins(Margins margins)
+{
+    if (margins == m_margins)
+        return;
+    m_margins = margins;
+    updateSize();
+}
+
+void ScrollArea::setViewportSize(Size size)
+{
+    if (size == m_viewportSize)
+        return;
+    m_viewportSize = size;
+    updateSize();
+}
+
+void ScrollArea::updateSize()
+{
+    float height = m_viewportSize.height + m_margins.top + m_margins.bottom;
+    float width = m_viewportSize.width + m_margins.left + m_margins.right;
+    setSize({width, height});
+}
 }

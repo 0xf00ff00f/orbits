@@ -12,6 +12,9 @@
 class AbstractTexture;
 struct PackedPixmap;
 
+namespace gl
+{
+
 class SpriteBatcher : private NonCopyable
 {
 public:
@@ -19,33 +22,29 @@ public:
     ~SpriteBatcher();
 
     void setTransformMatrix(const glm::mat4 &matrix);
-    glm::mat4 transformMatrix() const;
+    glm::mat4 transformMatrix() const { return m_transformMatrix; }
 
     void setBatchProgram(ShaderManager::Program program);
-    ShaderManager::Program batchProgram() const;
+    ShaderManager::Program batchProgram() const { return m_batchProgram; }
+
+    void setClipRect(const RectF &rect);
 
     void begin();
     void flush();
 
-    void addSprite(const glm::vec2 &topLeft, const glm::vec2 &bottomRight, const glm::vec4 &color, int depth);
-    void addSprite(const PackedPixmap &pixmap, const glm::vec2 &topLeft, const glm::vec2 &bottomRight,
-                   const glm::vec4 &color, int depth);
+    void addSprite(const RectF &rect, const glm::vec4 &color, int depth);
+    void addSprite(const PackedPixmap &pixmap, const RectF &rect, const glm::vec4 &color, int depth);
 
 private:
-    struct PositionUV
-    {
-        glm::vec2 position;
-        glm::vec2 texCoord;
-    };
-    void addSprite(const AbstractTexture *texture, const PositionUV &topLeft, const PositionUV &bottomRight,
-                   const glm::vec4 &color, int depth);
+    void addSprite(const AbstractTexture *texture, const RectF &rect, const RectF &texRect, const glm::vec4 &color,
+                   int depth);
 
     struct Quad
     {
         ShaderManager::Program program;
         const AbstractTexture *texture;
-        PositionUV topLeft;
-        PositionUV bottomRight;
+        RectF rect;
+        RectF texRect;
         glm::vec4 color;
         int depth;
     };
@@ -64,9 +63,12 @@ private:
 
     std::array<Quad, MaxQuadsPerBatch> m_quads;
     int m_quadCount = 0;
-    gl::Buffer m_buffer;
+    Buffer m_buffer;
     glm::mat4 m_transformMatrix;
     ShaderManager::Program m_batchProgram = ShaderManager::Program::Flat;
     bool m_bufferAllocated = false;
     int m_bufferOffset = 0;
+    RectF m_clipRect;
 };
+
+}
