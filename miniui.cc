@@ -28,6 +28,15 @@ void Item::renderBackground(const glm::vec2 &pos, int depth)
     painter->drawRect(pos, pos + glm::vec2(width(), height()), bgColor, depth);
 }
 
+void Item::setSize(float width, float height)
+{
+    if (width == m_width && height == m_height)
+        return;
+    m_width = width;
+    m_height = height;
+    m_resizedEvent.notify(m_width, m_height);
+}
+
 Label::Label(std::u32string_view text)
     : Label(defaultFont(), text)
 {
@@ -49,27 +58,33 @@ void Label::mouseEvent(const MouseEvent &event)
 
 void Label::setFont(const Font &font)
 {
+    if (font == m_font)
+        return;
     m_font = font;
     updateSize();
 }
 
 void Label::setText(std::u32string_view text)
 {
+    if (text == m_text)
+        return;
     m_text = text;
     updateSize();
 }
 
 void Label::setMargins(Margins margins)
 {
+    if (margins == m_margins)
+        return;
     m_margins = margins;
     updateSize();
 }
 
 void Label::updateSize()
 {
-    m_height = m_font.pixelHeight() + m_margins.top + m_margins.bottom;
-    m_width = m_font.textWidth(m_text) + m_margins.left + m_margins.right;
-    m_resizedEvent.notify(m_width, m_height);
+    const float height = m_font.pixelHeight() + m_margins.top + m_margins.bottom;
+    const float width = m_font.textWidth(m_text) + m_margins.left + m_margins.right;
+    setSize(width, height);
 }
 
 void Label::render(const glm::vec2 &pos, int depth)
@@ -95,6 +110,8 @@ void Image::mouseEvent(const MouseEvent &event)
 
 void Image::setSource(std::string_view source)
 {
+    if (source == m_source)
+        return;
     m_source = source;
     m_pixmap = [this] {
         auto *cache = System::instance().uiPainter()->pixmapCache();
@@ -105,20 +122,22 @@ void Image::setSource(std::string_view source)
 
 void Image::setMargins(Margins margins)
 {
+    if (margins == m_margins)
+        return;
     m_margins = margins;
     updateSize();
 }
 
 void Image::updateSize()
 {
-    m_height = m_margins.top + m_margins.bottom;
-    m_width = m_margins.left + m_margins.right;
+    float height = m_margins.top + m_margins.bottom;
+    float width = m_margins.left + m_margins.right;
     if (m_pixmap)
     {
-        m_width += m_pixmap->width;
-        m_height += m_pixmap->height;
+        width += m_pixmap->width;
+        height += m_pixmap->height;
     }
-    m_resizedEvent.notify(m_width, m_height);
+    setSize(width, height);
 }
 
 void Image::render(const glm::vec2 &pos, int depth)
@@ -150,7 +169,7 @@ void Container::mouseEvent(const MouseEvent &event)
 void Container::addItem(std::unique_ptr<Item> item)
 {
     auto resizedConnection = item->resizedEvent().connect([this](float width, float height) {
-        // log("child resized: %f %f\n", width, height);
+        log("child resized: %f %f\n", width, height);
         updateLayout();
     });
     m_layoutItems.emplace_back(new LayoutItem{{}, std::move(item)});
@@ -160,12 +179,16 @@ void Container::addItem(std::unique_ptr<Item> item)
 
 void Container::setMargins(Margins margins)
 {
+    if (margins == m_margins)
+        return;
     m_margins = margins;
     updateLayout();
 }
 
 void Container::setSpacing(float spacing)
 {
+    if (spacing == m_spacing)
+        return;
     m_spacing = spacing;
     updateLayout();
 }
@@ -179,6 +202,8 @@ void Container::render(const glm::vec2 &pos, int depth)
 
 void Column::setMinimumWidth(float width)
 {
+    if (width == m_minimumWidth)
+        return;
     m_minimumWidth = width;
     updateLayout();
 }
@@ -186,18 +211,19 @@ void Column::setMinimumWidth(float width)
 void Column::updateLayout()
 {
     // update size
-    m_width = m_minimumWidth;
-    m_height = 0;
+    float width = m_minimumWidth;
+    float height = 0;
     for (auto &layoutItem : m_layoutItems)
     {
         auto &item = layoutItem->item;
-        m_width = std::max(m_width, item->width());
-        m_height += item->height();
+        width = std::max(width, item->width());
+        height += item->height();
     }
     if (!m_layoutItems.empty())
-        m_height += (m_layoutItems.size() - 1) * m_spacing;
-    m_width += m_margins.left + m_margins.right;
-    m_height += m_margins.top + m_margins.bottom;
+        height += (m_layoutItems.size() - 1) * m_spacing;
+    width += m_margins.left + m_margins.right;
+    height += m_margins.top + m_margins.bottom;
+    setSize(width, height);
 
     // update item offsets
     auto p = glm::vec2(m_margins.left, m_margins.top);
@@ -219,30 +245,32 @@ void Column::updateLayout()
         layoutItem->offset = p + glm::vec2(offset, 0.0f);
         p.y += layoutItem->item->height() + m_spacing;
     }
-
-    m_resizedEvent.notify(m_width, m_height);
 }
 
 void Row::setMinimumHeight(float height)
 {
+    if (height == m_minimumHeight)
+        return;
     m_minimumHeight = height;
+    updateLayout();
 }
 
 void Row::updateLayout()
 {
     // update size
-    m_width = 0;
-    m_height = m_minimumHeight;
+    float width = 0;
+    float height = m_minimumHeight;
     for (auto &layoutItem : m_layoutItems)
     {
         auto &item = layoutItem->item;
-        m_width += item->width();
-        m_height = std::max(m_height, item->height());
+        width += item->width();
+        height = std::max(height, item->height());
     }
     if (!m_layoutItems.empty())
-        m_width += (m_layoutItems.size() - 1) * m_spacing;
-    m_width += m_margins.left + m_margins.right;
-    m_height += m_margins.top + m_margins.bottom;
+        width += (m_layoutItems.size() - 1) * m_spacing;
+    width += m_margins.left + m_margins.right;
+    height += m_margins.top + m_margins.bottom;
+    setSize(width, height);
 
     // update item offsets
     auto p = glm::vec2(m_margins.left, m_margins.top);
@@ -264,8 +292,6 @@ void Row::updateLayout()
         layoutItem->offset = p + glm::vec2(0.0f, offset);
         p.x += layoutItem->item->width() + m_spacing;
     }
-
-    m_resizedEvent.notify(m_width, m_height);
 }
 
 }

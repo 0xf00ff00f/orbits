@@ -19,6 +19,8 @@ public:
     float lineGap() const;
     float textWidth(std::u32string_view text) const;
 
+    bool operator==(const Font &other) const { return m_name == other.m_name && m_pixelHeight == other.m_pixelHeight; }
+
 private:
     GlyphCache *glyphCache() const;
 
