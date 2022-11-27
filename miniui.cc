@@ -40,6 +40,13 @@ Label::Label(const Font &font, std::u32string_view text)
     updateSize();
 }
 
+void Label::mouseEvent(const MouseEvent &event)
+{
+    if (event.type == MouseEvent::Type::Press)
+        log("**** clicked label %s\n", std::string(m_text.begin(), m_text.end()).c_str());
+    ;
+}
+
 void Label::setFont(const Font &font)
 {
     m_font = font;
@@ -80,6 +87,12 @@ Image::Image(std::string_view source)
     setSource(source);
 }
 
+void Image::mouseEvent(const MouseEvent &event)
+{
+    if (event.type == MouseEvent::Type::Press)
+        log("**** clicked image\n");
+}
+
 void Image::setSource(std::string_view source)
 {
     m_source = source;
@@ -118,13 +131,29 @@ void Image::render(const glm::vec2 &pos, int depth)
     }
 }
 
+void Container::mouseEvent(const MouseEvent &event)
+{
+    const auto &p = event.position;
+    for (auto &layoutItem : m_layoutItems)
+    {
+        const auto &item = layoutItem->item;
+        const auto &offset = layoutItem->offset;
+        if (p.x >= offset.x && p.x < offset.x + item->width() && p.y >= offset.y && p.y < offset.y + item->height())
+        {
+            MouseEvent itemEvent = event;
+            itemEvent.position -= offset;
+            item->mouseEvent(itemEvent);
+        }
+    }
+}
+
 void Container::addItem(std::unique_ptr<Item> item)
 {
-    m_items.push_back(std::move(item));
-    auto resizedConnection = m_items.back()->resizedEvent().connect([this](float width, float height) {
-        log("child resized: %f %f\n", width, height);
+    auto resizedConnection = item->resizedEvent().connect([this](float width, float height) {
+        // log("child resized: %f %f\n", width, height);
         updateLayout();
     });
+    m_layoutItems.emplace_back(new LayoutItem{{}, std::move(item)});
     m_childResizedConnections.push_back(std::move(resizedConnection));
     updateLayout();
 }
@@ -141,6 +170,13 @@ void Container::setSpacing(float spacing)
     updateLayout();
 }
 
+void Container::render(const glm::vec2 &pos, int depth)
+{
+    renderBackground(pos, depth);
+    for (auto &layoutItem : m_layoutItems)
+        layoutItem->item->render(pos + layoutItem->offset, depth + 1);
+}
+
 void Column::setMinimumWidth(float width)
 {
     m_minimumWidth = width;
@@ -149,27 +185,25 @@ void Column::setMinimumWidth(float width)
 
 void Column::updateLayout()
 {
+    // update size
     m_width = m_minimumWidth;
     m_height = 0;
-    for (auto &item : m_items)
+    for (auto &layoutItem : m_layoutItems)
     {
+        auto &item = layoutItem->item;
         m_width = std::max(m_width, item->width());
         m_height += item->height();
     }
-    if (!m_items.empty())
-        m_height += (m_items.size() - 1) * m_spacing;
+    if (!m_layoutItems.empty())
+        m_height += (m_layoutItems.size() - 1) * m_spacing;
     m_width += m_margins.left + m_margins.right;
     m_height += m_margins.top + m_margins.bottom;
-    m_resizedEvent.notify(m_width, m_height);
-}
 
-void Column::render(const glm::vec2 &pos, int depth)
-{
-    renderBackground(pos, depth);
-    auto p = pos + glm::vec2(m_margins.left, m_margins.top);
-    for (auto &item : m_items)
+    // update item offsets
+    auto p = glm::vec2(m_margins.left, m_margins.top);
+    for (auto &layoutItem : m_layoutItems)
     {
-        const float offset = [this, &item] {
+        const float offset = [this, &item = layoutItem->item] {
             const auto alignment = item->alignment & (Align::Left | Align::HCenter | Align::Right);
             switch (alignment)
             {
@@ -182,9 +216,11 @@ void Column::render(const glm::vec2 &pos, int depth)
                 return m_width - (m_margins.left + m_margins.right) - item->width();
             }
         }();
-        item->render(p + glm::vec2(offset, 0.0f), depth + 1);
-        p.y += item->height() + m_spacing;
+        layoutItem->offset = p + glm::vec2(offset, 0.0f);
+        p.y += layoutItem->item->height() + m_spacing;
     }
+
+    m_resizedEvent.notify(m_width, m_height);
 }
 
 void Row::setMinimumHeight(float height)
@@ -194,27 +230,25 @@ void Row::setMinimumHeight(float height)
 
 void Row::updateLayout()
 {
+    // update size
     m_width = 0;
     m_height = m_minimumHeight;
-    for (auto &item : m_items)
+    for (auto &layoutItem : m_layoutItems)
     {
+        auto &item = layoutItem->item;
         m_width += item->width();
         m_height = std::max(m_height, item->height());
     }
-    if (!m_items.empty())
-        m_width += (m_items.size() - 1) * m_spacing;
+    if (!m_layoutItems.empty())
+        m_width += (m_layoutItems.size() - 1) * m_spacing;
     m_width += m_margins.left + m_margins.right;
     m_height += m_margins.top + m_margins.bottom;
-    m_resizedEvent.notify(m_width, m_height);
-}
 
-void Row::render(const glm::vec2 &pos, int depth)
-{
-    renderBackground(pos, depth);
-    auto p = pos + glm::vec2(m_margins.left, m_margins.top);
-    for (auto &item : m_items)
+    // update item offsets
+    auto p = glm::vec2(m_margins.left, m_margins.top);
+    for (auto &layoutItem : m_layoutItems)
     {
-        const float offset = [this, &item] {
+        const float offset = [this, &item = layoutItem->item] {
             const auto alignment = item->alignment & (Align::Top | Align::VCenter | Align::Bottom);
             switch (alignment)
             {
@@ -227,9 +261,11 @@ void Row::render(const glm::vec2 &pos, int depth)
                 return m_height - (m_margins.top + m_margins.bottom) - item->height();
             }
         }();
-        item->render(p + glm::vec2(0.0f, offset), depth + 1);
-        p.x += item->width() + m_spacing;
+        layoutItem->offset = p + glm::vec2(0.0f, offset);
+        p.x += layoutItem->item->width() + m_spacing;
     }
+
+    m_resizedEvent.notify(m_width, m_height);
 }
 
 }

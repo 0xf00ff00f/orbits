@@ -113,7 +113,7 @@ void Game::render()
     auto *painter = system.uiPainter();
     painter->setTransformMatrix(mvp);
     painter->begin();
-    m_item->render(glm::vec2(20, 20));
+    m_item->render(m_itemOffset);
     painter->end();
 }
 
@@ -139,5 +139,38 @@ void Game::initialize()
             v.color = glm::vec4(t);
         }
         m_mesh->setData(vertices);
+    }
+}
+
+void Game::onMouseButtonPress(miniui::MouseButtons button)
+{
+    m_mouseButtons |= button;
+    using namespace miniui;
+    mouseEvent(MouseEvent{MouseEvent::Type::Press, m_mouseButtons, m_mousePosition});
+}
+
+void Game::onMouseButtonRelease(miniui::MouseButtons button)
+{
+    m_mouseButtons &= ~button;
+    using namespace miniui;
+    mouseEvent(MouseEvent{MouseEvent::Type::Release, m_mouseButtons, m_mousePosition});
+}
+
+void Game::onMouseMove(const glm::vec2 &pos)
+{
+    m_mousePosition = pos;
+    using namespace miniui;
+    mouseEvent(MouseEvent{MouseEvent::Type::Move, m_mouseButtons, m_mousePosition});
+}
+
+void Game::mouseEvent(const miniui::MouseEvent &event)
+{
+    const auto &p = event.position;
+    if (p.x >= m_itemOffset.x && p.x < m_itemOffset.x + m_item->width() && p.y >= m_itemOffset.y &&
+        p.y < m_itemOffset.y + m_item->height())
+    {
+        miniui::MouseEvent itemEvent = event;
+        itemEvent.position -= m_itemOffset;
+        m_item->mouseEvent(itemEvent);
     }
 }

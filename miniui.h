@@ -3,6 +3,7 @@
 #include "textureatlas.h"
 #include "font.h"
 #include "event.h"
+#include "mouseevent.h"
 
 #include <glm/glm.hpp>
 
@@ -70,6 +71,7 @@ public:
     virtual float width() = 0;
     virtual float height() = 0;
     virtual void render(const glm::vec2 &pos, int depth = 0) = 0;
+    virtual void mouseEvent(const MouseEvent &event) = 0;
 
     ResizedEvent &resizedEvent() { return m_resizedEvent; }
 
@@ -91,6 +93,7 @@ public:
 
     float width() override { return m_width; }
     float height() override { return m_height; }
+    void mouseEvent(const MouseEvent &event) override;
 
     void setFont(const Font &font);
     Font font() const;
@@ -123,6 +126,7 @@ public:
 
     float width() override { return m_width; }
     float height() override { return m_height; }
+    void mouseEvent(const MouseEvent &event) override;
 
     void setSource(std::string_view source);
     const std::string &source() const { return m_source; }
@@ -147,6 +151,9 @@ private:
 class Container : public Item
 {
 public:
+    void mouseEvent(const MouseEvent &event) override;
+    void render(const glm::vec2 &pos, int depth = 0) override;
+
     void addItem(std::unique_ptr<Item> item);
 
     void setMargins(Margins margins);
@@ -158,7 +165,12 @@ public:
     virtual void updateLayout() = 0;
 
 protected:
-    std::vector<std::unique_ptr<Item>> m_items;
+    struct LayoutItem
+    {
+        glm::vec2 offset;
+        std::unique_ptr<Item> item;
+    };
+    std::vector<std::unique_ptr<LayoutItem>> m_layoutItems;
     Margins m_margins;
     float m_spacing = 0.0f;
 
@@ -174,8 +186,6 @@ public:
 
     void setMinimumWidth(float width);
     float minimumWidth() const { return m_minimumWidth; }
-
-    void render(const glm::vec2 &pos, int depth = 0) override;
 
 private:
     void updateLayout() override;
@@ -193,8 +203,6 @@ public:
 
     void setMinimumHeight(float height);
     float minimumHeight() const { return m_minimumHeight; }
-
-    void render(const glm::vec2 &pos, int depth = 0) override;
 
 private:
     void updateLayout() override;
