@@ -37,6 +37,33 @@ void Item::setSize(float width, float height)
     m_resizedEvent.notify(m_width, m_height);
 }
 
+Rectangle::Rectangle()
+    : Rectangle(0.0f, 0.0f)
+{
+}
+
+Rectangle::Rectangle(float width, float height)
+{
+    setSize(width, height);
+}
+
+void Rectangle::setWidth(float width)
+{
+    setSize(width, m_height);
+}
+
+void Rectangle::setHeight(float height)
+{
+    setSize(m_width, height);
+}
+
+void Rectangle::render(const glm::vec2 &pos, int depth)
+{
+    renderBackground(pos, depth);
+}
+
+void Rectangle::mouseEvent(const MouseEvent &event) {}
+
 Label::Label(std::u32string_view text)
     : Label(defaultFont(), text)
 {

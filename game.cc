@@ -35,6 +35,15 @@ Game::Game()
     container->addItem(makeLabel(U"Lorem ipsum"sv, 44));
 
     {
+        auto rect = std::make_unique<miniui::Rectangle>();
+        rect->setSize(200, 20);
+        rect->fillBackground = true;
+        rect->bgColor = glm::vec4(1, 0, 0, 1);
+        rect->alignment = miniui::Align::HCenter;
+        container->addItem(std::move(rect));
+    }
+
+    {
         auto row = std::make_unique<miniui::Row>();
         row->fillBackground = true;
         row->bgColor = glm::vec4(1, 1, 0, 0.5);

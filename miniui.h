@@ -94,6 +94,20 @@ protected:
     ResizedEvent m_resizedEvent;
 };
 
+class Rectangle : public Item
+{
+public:
+    Rectangle();
+    Rectangle(float width, float height);
+
+    void render(const glm::vec2 &pos, int depth = 0) override;
+    void mouseEvent(const MouseEvent &event) override;
+
+    using Item::setSize;
+    void setWidth(float width);
+    void setHeight(float height);
+};
+
 class Label : public Item
 {
 public:
