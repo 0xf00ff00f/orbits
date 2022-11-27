@@ -55,17 +55,22 @@ Game::Game()
 
         row->addItem(std::make_unique<miniui::Image>("peppers.jpg"));
 
-        auto l0 = makeLabel(U"Hellooooo"sv, 60);
+        auto l0 = makeLabel(U"Hello"sv, 60);
         l0->alignment = miniui::Align::Bottom;
         row->addItem(std::move(l0));
 
-        auto l1 = makeLabel(U"Hellooooo"sv, 60);
+        auto l1 = makeLabel(U"Hello"sv, 60);
         l1->alignment = miniui::Align::VCenter;
         row->addItem(std::move(l1));
 
-        auto l2 = makeLabel(U"Hellooooo"sv, 60);
+        auto l2 = makeLabel(U"Hello"sv, 60);
         l2->alignment = miniui::Align::Top;
         row->addItem(std::move(l2));
+
+        auto l3 = makeLabel(U""sv, 120);
+        l3->alignment = miniui::Align::Bottom;
+        m_counterLabel = l3.get();
+        row->addItem(std::move(l3));
 
         container->addItem(std::move(row));
     }
@@ -112,7 +117,12 @@ void Game::render()
     painter->end();
 }
 
-void Game::update(float /* elapsed */) {}
+void Game::update(float elapsed)
+{
+    m_time += elapsed;
+    auto text = std::to_string(static_cast<int>(m_time * 10.0f));
+    m_counterLabel->setText(std::u32string(text.begin(), text.end()));
+}
 
 void Game::initialize()
 {

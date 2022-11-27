@@ -56,6 +56,8 @@ struct Margins
     float right = 0;
 };
 
+class Container;
+
 class Item
 {
 public:
@@ -71,6 +73,9 @@ public:
 
 protected:
     void renderBackground(const glm::vec2 &pos, int depth);
+
+    Container *m_parentContainer = nullptr;
+    friend class Container;
 };
 
 class Label : public Item
@@ -145,9 +150,9 @@ public:
     void setSpacing(float spacing);
     float spacing() const { return m_spacing; }
 
-protected:
-    virtual void updateLayout() = 0;
+    virtual void updateLayout();
 
+protected:
     std::vector<std::unique_ptr<Item>> m_items;
     Margins m_margins;
     float m_spacing = 0.0f;

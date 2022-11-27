@@ -8,6 +8,7 @@
 namespace miniui
 {
 class Item;
+class Label;
 }
 
 class Game : private NonCopyable
@@ -33,4 +34,6 @@ private:
     };
     std::unique_ptr<gl::Mesh<Vertex>> m_mesh;
     std::unique_ptr<miniui::Item> m_item;
+    miniui::Label *m_counterLabel;
+    float m_time = 0.0f;
 };

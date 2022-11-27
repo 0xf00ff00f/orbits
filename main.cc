@@ -9,7 +9,7 @@
 
 int main()
 {
-    constexpr auto Width = 1200;
+    constexpr auto Width = 1600;
     constexpr auto Height = 1000;
 
     glfwInit();
@@ -37,6 +37,7 @@ int main()
 
             while (!glfwWindowShouldClose(window.get()))
             {
+                game->update(1.0f / 60.0f);
                 game->render();
                 glfwSwapBuffers(window.get());
                 glfwPollEvents();
