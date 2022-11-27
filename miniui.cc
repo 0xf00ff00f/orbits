@@ -262,7 +262,7 @@ void Column::setMinimumWidth(float width)
 void Column::updateLayout()
 {
     // update size
-    float width = m_minimumWidth;
+    float width = std::max(m_minimumWidth - (m_margins.left + m_margins.right), 0.0f);
     float height = 0;
     for (auto &layoutItem : m_layoutItems)
     {
@@ -311,7 +311,7 @@ void Row::updateLayout()
 {
     // update size
     float width = 0;
-    float height = m_minimumHeight;
+    float height = std::max(m_minimumHeight - (m_margins.top + m_margins.bottom), 0.0f);
     for (auto &layoutItem : m_layoutItems)
     {
         auto &item = layoutItem->item;
