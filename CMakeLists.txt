@@ -33,8 +33,6 @@ set(SOURCES
     textureatlaspage.h
     textureatlas.cc
     textureatlas.h
-    glyphcache.cc
-    glyphcache.h
     painter.cc
     painter.h
     shadermanager.cc

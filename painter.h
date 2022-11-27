@@ -20,7 +20,6 @@ class SpriteBatcher;
 
 namespace miniui
 {
-class GlyphCache;
 class Font;
 
 class Painter : private NonCopyable
@@ -34,7 +33,7 @@ public:
     void begin();
     void end();
 
-    void setFont(const Font &font);
+    void setFont(Font *font);
 
     void setClipRect(const RectF &rect);
     RectF clipRect() const { return m_clipRect; }
@@ -51,7 +50,7 @@ private:
     int m_windowWidth = 0;
     int m_windowHeight = 0;
     std::unique_ptr<gl::SpriteBatcher> m_spriteBatcher;
-    GlyphCache *m_font = nullptr;
+    Font *m_font = nullptr;
     RectF m_clipRect;
     bool m_clippingEnabled = false;
 };

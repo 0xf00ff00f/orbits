@@ -5,6 +5,7 @@
 #include "painter.h"
 #include "log.h"
 #include "system.h"
+#include "fontcache.h"
 
 #include <GL/glew.h>
 
@@ -29,7 +30,7 @@ Game::Game()
         label->fillBackground = true;
         label->bgColor = glm::vec4(0, 1, 0, 0.5);
         label->setMargins({10, 10, 10, 10});
-        label->setFont(miniui::Font("OpenSans_Regular", fontSize));
+        label->setFont(System::instance()->fontCache()->font("OpenSans_Regular", fontSize));
         return label;
     };
     container->addItem(makeLabel(U"The quick brown fox"sv, 44));

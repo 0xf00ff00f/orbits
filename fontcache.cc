@@ -1,6 +1,5 @@
 #include "fontcache.h"
 
-#include "glyphcache.h"
 #include "log.h"
 
 #include <cstddef>
@@ -31,20 +30,20 @@ std::size_t FontCache::FontKeyHasher::operator()(const FontCache::FontKey &key) 
     return hash;
 }
 
-GlyphCache *FontCache::glyphCache(std::string_view name, int pixelHeight)
+Font *FontCache::font(std::string_view name, int pixelHeight)
 {
     FontKey key{std::string(name), pixelHeight};
     auto it = m_fonts.find(key);
     if (it == m_fonts.end())
     {
-        auto glyphCache = std::make_unique<GlyphCache>(m_textureAtlas);
+        auto font = std::make_unique<Font>(m_textureAtlas);
         const auto path = fontPath(name);
-        if (!glyphCache->load(path, pixelHeight))
+        if (!font->load(path, pixelHeight))
         {
             log("Failed to load font %s\n", path.c_str());
-            glyphCache.reset();
+            font.reset();
         }
-        it = m_fonts.emplace(std::move(key), std::move(glyphCache)).first;
+        it = m_fonts.emplace(std::move(key), std::move(font)).first;
     }
     return it->second.get();
 }

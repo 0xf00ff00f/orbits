@@ -122,12 +122,12 @@ class Label : public Item
 {
 public:
     explicit Label(std::u32string_view text = {});
-    Label(const Font &font, std::u32string_view text);
+    Label(Font *font, std::u32string_view text);
 
     void mouseEvent(const MouseEvent &event) override;
 
-    void setFont(const Font &font);
-    Font font() const;
+    void setFont(Font *font);
+    Font *font() const;
 
     void setText(std::u32string_view text);
     const std::u32string &text() const { return m_text; }
@@ -142,7 +142,7 @@ public:
 private:
     void updateSize();
 
-    Font m_font;
+    Font *m_font;
     std::u32string m_text;
     Margins m_margins;
 };

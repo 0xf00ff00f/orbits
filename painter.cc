@@ -1,6 +1,5 @@
 #include "painter.h"
 
-#include "glyphcache.h"
 #include "spritebatcher.h"
 #include "font.h"
 #include "log.h"
@@ -45,9 +44,9 @@ void Painter::end()
     m_spriteBatcher->flush();
 }
 
-void Painter::setFont(const Font &font)
+void Painter::setFont(Font *font)
 {
-    m_font = font.glyphCache();
+    m_font = font;
 }
 
 void Painter::setClipRect(const RectF &rect)

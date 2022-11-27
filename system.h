@@ -11,7 +11,6 @@ namespace miniui
 class Painter;
 class FontCache;
 class PixmapCache;
-class GlyphCache;
 }
 
 class System

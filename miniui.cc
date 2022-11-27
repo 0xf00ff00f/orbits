@@ -2,7 +2,7 @@
 
 #include "system.h"
 #include "painter.h"
-#include "glyphcache.h"
+#include "fontcache.h"
 #include "pixmapcache.h"
 #include "log.h"
 
@@ -13,9 +13,10 @@ namespace miniui
 {
 namespace
 {
-Font defaultFont()
+Font *defaultFont()
 {
-    return Font("OpenSans_Regular", 40);
+    static Font *font = System::instance()->fontCache()->font("OpenSans_Regular", 40);
+    return font;
 }
 } // namespace
 
@@ -85,7 +86,7 @@ Label::Label(std::u32string_view text)
 {
 }
 
-Label::Label(const Font &font, std::u32string_view text)
+Label::Label(Font *font, std::u32string_view text)
     : m_font(font)
     , m_text(text)
 {
@@ -98,7 +99,7 @@ void Label::mouseEvent(const MouseEvent &event)
         log("**** clicked label %s\n", std::string(m_text.begin(), m_text.end()).c_str());
 }
 
-void Label::setFont(const Font &font)
+void Label::setFont(Font *font)
 {
     if (font == m_font)
         return;
@@ -124,8 +125,8 @@ void Label::setMargins(Margins margins)
 
 void Label::updateSize()
 {
-    const float height = m_font.pixelHeight() + m_margins.top + m_margins.bottom;
-    const float width = m_font.textWidth(m_text) + m_margins.left + m_margins.right;
+    const float height = m_font->pixelHeight() + m_margins.top + m_margins.bottom;
+    const float width = m_font->textWidth(m_text) + m_margins.left + m_margins.right;
     setSize({width, height});
 }
 
