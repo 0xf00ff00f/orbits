@@ -9,8 +9,8 @@ varying vec4 vs_color;
 void main(void)
 {
     const float Radius = 0.5;
-    float feather = 2.0 * max(fwidth(vs_texCoord.x), fwidth(vs_texCoord.y));
-    float d = distance(vs_texCoord, vec2(0.5, 0.5));
-    float alpha = smoothstep(Radius, Radius - feather, d);
+    float dist = distance(vs_texCoord, vec2(0.5, 0.5));
+    float feather = fwidth(dist);
+    float alpha = smoothstep(Radius, Radius - feather, dist);
     gl_FragColor = vec4(vs_color.xyz, alpha * vs_color.w);
 }
