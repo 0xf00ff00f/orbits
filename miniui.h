@@ -19,7 +19,7 @@ namespace miniui
 {
 class Painter;
 
-enum class Align : unsigned
+enum class Alignment : unsigned
 {
     None = 0,
     Left = 1 << 0,
@@ -30,24 +30,24 @@ enum class Align : unsigned
     Bottom = 1 << 5
 };
 
-constexpr Align operator&(Align x, Align y)
+constexpr Alignment operator&(Alignment x, Alignment y)
 {
-    using UT = typename std::underlying_type_t<Align>;
-    return static_cast<Align>(static_cast<UT>(x) & static_cast<UT>(y));
+    using UT = typename std::underlying_type_t<Alignment>;
+    return static_cast<Alignment>(static_cast<UT>(x) & static_cast<UT>(y));
 }
 
-constexpr Align &operator&=(Align &x, Align y)
+constexpr Alignment &operator&=(Alignment &x, Alignment y)
 {
     return x = x & y;
 }
 
-constexpr Align operator|(Align x, Align y)
+constexpr Alignment operator|(Alignment x, Alignment y)
 {
-    using UT = typename std::underlying_type_t<Align>;
-    return static_cast<Align>(static_cast<UT>(x) | static_cast<UT>(y));
+    using UT = typename std::underlying_type_t<Alignment>;
+    return static_cast<Alignment>(static_cast<UT>(x) | static_cast<UT>(y));
 }
 
-constexpr Align &operator|=(Align &x, Align y)
+constexpr Alignment &operator|=(Alignment &x, Alignment y)
 {
     return x = x | y;
 }
@@ -92,7 +92,7 @@ public:
 
     bool fillBackground = false;
     glm::vec4 bgColor;
-    Align alignment = Align::VCenter | Align::Left;
+    Alignment containerAlignment = Alignment::VCenter | Alignment::Left;
 
 protected:
     void setSize(Size size);

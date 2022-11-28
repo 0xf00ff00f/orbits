@@ -41,7 +41,7 @@ Game::Game()
         rect->setSize(200, 20);
         rect->fillBackground = true;
         rect->bgColor = glm::vec4(1, 0, 0, 1);
-        rect->alignment = miniui::Align::HCenter;
+        rect->containerAlignment = miniui::Alignment::HCenter;
         container->addItem(std::move(rect));
     }
 
@@ -49,7 +49,7 @@ Game::Game()
         auto row = std::make_unique<miniui::Row>();
         row->fillBackground = true;
         row->bgColor = glm::vec4(1, 1, 0, 0.5);
-        row->alignment = miniui::Align::Right;
+        row->containerAlignment = miniui::Alignment::Right;
         row->setMargins({20, 20, 20, 20});
         row->setSpacing(20);
         row->setMinimumHeight(200);
@@ -69,19 +69,19 @@ Game::Game()
         row->addItem(std::make_unique<miniui::Image>("peppers.jpg"));
 
         auto l0 = makeLabel(U"click"sv, 60);
-        l0->alignment = miniui::Align::Bottom;
+        l0->containerAlignment = miniui::Alignment::Bottom;
         row->addItem(std::move(l0));
 
         auto l1 = makeLabel(U"here"sv, 60);
-        l1->alignment = miniui::Align::VCenter;
+        l1->containerAlignment = miniui::Alignment::VCenter;
         row->addItem(std::move(l1));
 
         auto l2 = makeLabel(U"plos"sv, 60);
-        l2->alignment = miniui::Align::Top;
+        l2->containerAlignment = miniui::Alignment::Top;
         row->addItem(std::move(l2));
 
         auto l3 = makeLabel(U""sv, 120);
-        l3->alignment = miniui::Align::Bottom;
+        l3->containerAlignment = miniui::Alignment::Bottom;
         m_counterLabel = l3.get();
         row->addItem(std::move(l3));
 
@@ -95,7 +95,7 @@ Game::Game()
 
     {
         auto l = makeLabel(U"Sphinx of black quartz"sv, 44);
-        l->alignment = miniui::Align::Right;
+        l->containerAlignment = miniui::Alignment::Right;
         container->addItem(std::move(l));
     }
 

@@ -279,16 +279,16 @@ void Column::updateLayout()
     for (auto &layoutItem : m_layoutItems)
     {
         const float offset = [this, &item = layoutItem->item] {
-            const auto alignment = item->alignment & (Align::Left | Align::HCenter | Align::Right);
+            const auto alignment = item->containerAlignment & (Alignment::Left | Alignment::HCenter | Alignment::Right);
             const auto contentWidth = m_size.width - (m_margins.left + m_margins.right);
             switch (alignment)
             {
-            case Align::Left:
+            case Alignment::Left:
             default:
                 return 0.0f;
-            case Align::HCenter:
+            case Alignment::HCenter:
                 return 0.5f * (contentWidth - item->width());
-            case Align::Right:
+            case Alignment::Right:
                 return contentWidth - item->width();
             }
         }();
@@ -328,15 +328,15 @@ void Row::updateLayout()
     {
         const float offset = [this, &item = layoutItem->item] {
             const auto contentHeight = m_size.height - (m_margins.top + m_margins.bottom);
-            const auto alignment = item->alignment & (Align::Top | Align::VCenter | Align::Bottom);
+            const auto alignment = item->containerAlignment & (Alignment::Top | Alignment::VCenter | Alignment::Bottom);
             switch (alignment)
             {
-            case Align::Top:
+            case Alignment::Top:
                 return 0.0f;
-            case Align::VCenter:
+            case Alignment::VCenter:
             default:
                 return 0.5f * (contentHeight - item->height());
-            case Align::Bottom:
+            case Alignment::Bottom:
                 return contentHeight - item->height();
             }
         }();
