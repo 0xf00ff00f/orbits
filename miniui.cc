@@ -123,18 +123,88 @@ void Label::setMargins(Margins margins)
     updateSize();
 }
 
+void Label::setFixedWidth(float width)
+{
+    if (width == m_fixedWidth)
+        return;
+    m_fixedWidth = width;
+    updateSize();
+}
+
+void Label::setFixedHeight(float height)
+{
+    if (height == m_fixedHeight)
+        return;
+    m_fixedHeight = height;
+    updateSize();
+}
+
 void Label::updateSize()
 {
-    const float height = m_font->pixelHeight() + m_margins.top + m_margins.bottom;
-    const float width = m_font->textWidth(m_text) + m_margins.left + m_margins.right;
+    m_contentHeight = m_font->pixelHeight();
+    m_contentWidth = m_font->textWidth(m_text);
+    const float height = [this] {
+        if (m_fixedHeight > 0)
+            return m_fixedHeight;
+        return m_contentHeight + m_margins.top + m_margins.bottom;
+    }();
+    const float width = [this] {
+        if (m_fixedWidth > 0)
+            return m_fixedWidth;
+        return m_contentWidth + m_margins.left + m_margins.right;
+    }();
     setSize({width, height});
 }
 
 void Label::render(Painter *painter, const glm::vec2 &pos, int depth)
 {
     renderBackground(painter, pos, depth);
+
+    const auto availableWidth = m_size.width - (m_margins.left + m_margins.right);
+    const auto availableHeight = m_size.height - (m_margins.top + m_margins.bottom);
+
+    bool clipped = availableWidth < m_contentWidth - 0.5f || availableHeight < m_contentHeight - 0.5f;
+    RectF prevClipRect;
+    if (clipped)
+    {
+        prevClipRect = painter->clipRect();
+        const auto p = pos + glm::vec2(m_margins.left, m_margins.top);
+        const auto rect = RectF{p, p + glm::vec2(availableWidth, availableHeight)};
+        painter->setClipRect(prevClipRect.intersected(rect));
+    }
+
+    const auto xOffset = [this, availableWidth] {
+        const auto horizAlignment = alignment & (Alignment::Left | Alignment::HCenter | Alignment::Right);
+        switch (horizAlignment)
+        {
+        case Alignment::Left:
+        default:
+            return 0.0f;
+        case Alignment::HCenter:
+            return 0.5f * (availableWidth - m_contentWidth);
+        case Alignment::Right:
+            return availableWidth - m_contentWidth;
+        }
+    }();
+    const auto yOffset = [this, availableHeight] {
+        const auto vertAlignment = alignment & (Alignment::Top | Alignment::VCenter | Alignment::Bottom);
+        switch (vertAlignment)
+        {
+        case Alignment::Top:
+            return 0.0f;
+        case Alignment::VCenter:
+        default:
+            return 0.5f * (availableHeight - m_contentHeight);
+        case Alignment::Bottom:
+            return availableHeight - m_contentHeight;
+        }
+    }();
+    const auto textPos = pos + glm::vec2(m_margins.left, m_margins.top) + glm::vec2(xOffset, yOffset);
     painter->setFont(m_font);
-    painter->drawText(m_text, pos + glm::vec2(m_margins.left, m_margins.top), color, depth + 1);
+    painter->drawText(m_text, textPos, color, depth + 1);
+
+    if (clipped)
+        painter->setClipRect(prevClipRect);
 }
 
 Image::Image() = default;
@@ -187,8 +257,8 @@ void Image::render(Painter *painter, const glm::vec2 &pos, int depth)
     renderBackground(painter, pos, depth);
     if (m_pixmap)
     {
-        const auto p = pos + glm::vec2(m_margins.left, m_margins.top);
-        const auto rect = RectF{p, p + glm::vec2(m_pixmap->width, m_pixmap->height)};
+        const auto imagePos = pos + glm::vec2(m_margins.left, m_margins.top);
+        const auto rect = RectF{imagePos, imagePos + glm::vec2(m_pixmap->width, m_pixmap->height)};
         painter->drawPixmap(*m_pixmap, rect, color, depth);
     }
 }
@@ -280,16 +350,16 @@ void Column::updateLayout()
     {
         const float offset = [this, &item = layoutItem->item] {
             const auto alignment = item->containerAlignment & (Alignment::Left | Alignment::HCenter | Alignment::Right);
-            const auto contentWidth = m_size.width - (m_margins.left + m_margins.right);
+            const auto availableWidth = m_size.width - (m_margins.left + m_margins.right);
             switch (alignment)
             {
             case Alignment::Left:
             default:
                 return 0.0f;
             case Alignment::HCenter:
-                return 0.5f * (contentWidth - item->width());
+                return 0.5f * (availableWidth - item->width());
             case Alignment::Right:
-                return contentWidth - item->width();
+                return availableWidth - item->width();
             }
         }();
         layoutItem->offset = p + glm::vec2(offset, 0.0f);
@@ -327,7 +397,7 @@ void Row::updateLayout()
     for (auto &layoutItem : m_layoutItems)
     {
         const float offset = [this, &item = layoutItem->item] {
-            const auto contentHeight = m_size.height - (m_margins.top + m_margins.bottom);
+            const auto availableHeight = m_size.height - (m_margins.top + m_margins.bottom);
             const auto alignment = item->containerAlignment & (Alignment::Top | Alignment::VCenter | Alignment::Bottom);
             switch (alignment)
             {
@@ -335,9 +405,9 @@ void Row::updateLayout()
                 return 0.0f;
             case Alignment::VCenter:
             default:
-                return 0.5f * (contentHeight - item->height());
+                return 0.5f * (availableHeight - item->height());
             case Alignment::Bottom:
-                return contentHeight - item->height();
+                return availableHeight - item->height();
             }
         }();
         layoutItem->offset = p + glm::vec2(0.0f, offset);

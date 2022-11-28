@@ -33,6 +33,13 @@ Game::Game()
         label->setFont(System::instance()->fontCache()->font("OpenSans_Regular", fontSize));
         return label;
     };
+    {
+        auto l0 = makeLabel(U"Lorem ipsum", 80);
+        l0->setFixedWidth(240);
+        l0->setFixedHeight(70);
+        l0->alignment = miniui::Alignment::Right | miniui::Alignment::Bottom;
+        container->addItem(std::move(l0));
+    }
     container->addItem(makeLabel(U"The quick brown fox"sv, 44));
     container->addItem(makeLabel(U"Lorem ipsum"sv, 44));
 

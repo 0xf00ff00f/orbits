@@ -135,9 +135,16 @@ public:
     void setMargins(Margins margins);
     Margins margins() const { return m_margins; }
 
+    void setFixedWidth(float width);
+    float fixedWidth() const { return m_fixedWidth; }
+
+    void setFixedHeight(float height);
+    float fixedHeight() const { return m_fixedHeight; }
+
     void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
     glm::vec4 color = glm::vec4(0, 0, 0, 1);
+    Alignment alignment = Alignment::VCenter | Alignment::Left;
 
 private:
     void updateSize();
@@ -145,6 +152,10 @@ private:
     Font *m_font;
     std::u32string m_text;
     Margins m_margins;
+    float m_contentWidth = 0;
+    float m_contentHeight = 0;
+    float m_fixedWidth = -1;  // ignored if not > 0
+    float m_fixedHeight = -1; // ignored if not > 0
 };
 
 class Image : public Item

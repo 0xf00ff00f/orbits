@@ -43,6 +43,18 @@ struct Rect
         return *this;
     }
 
+    Rect &operator&=(const Rect &rhs)
+    {
+        min = glm::max(min, rhs.min);
+        max = glm::min(max, rhs.max);
+        max = glm::max(min, max);
+        return *this;
+    }
+
+    Rect united(const Rect &other) const { return *this | other; }
+
+    Rect intersected(const Rect &other) const { return *this & other; }
+
     bool operator==(const Rect &other) { return min == other.min && max == other.max; }
 
     bool contains(const Point &p) const { return p.x >= min.x && p.x < max.x && p.y >= min.y && p.y < max.y; }
@@ -68,6 +80,13 @@ template<typename Point>
 inline Rect<Point> operator|(Rect<Point> lhs, const Rect<Point> &rhs)
 {
     lhs |= rhs;
+    return lhs;
+}
+
+template<typename Point>
+inline Rect<Point> operator&(Rect<Point> lhs, const Rect<Point> &rhs)
+{
+    lhs &= rhs;
     return lhs;
 }
 
