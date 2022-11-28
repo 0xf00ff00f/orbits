@@ -16,7 +16,7 @@ public:
 class Connection
 {
 public:
-    Connection(EventBase *e);
+    explicit Connection(EventBase *e);
     ~Connection();
 
     void setEvent(EventBase *e);
