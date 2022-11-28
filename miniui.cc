@@ -44,6 +44,15 @@ Item *Item::findItem(const glm::vec2 &pos)
     return rect.contains(pos) ? this : nullptr;
 }
 
+void Item::render(Painter *painter, const glm::vec2 &pos, int depth)
+{
+    const auto rect = RectF{pos, pos + glm::vec2(width(), height())};
+    if (!painter->clipRect().intersects(rect))
+        return;
+    renderBackground(painter, pos, depth);
+    renderContents(painter, pos, depth);
+}
+
 Rectangle::Rectangle()
     : Rectangle(Size{})
 {
@@ -74,10 +83,7 @@ void Rectangle::setHeight(float height)
     setSize({m_size.width, height});
 }
 
-void Rectangle::render(Painter *painter, const glm::vec2 &pos, int depth)
-{
-    renderBackground(painter, pos, depth);
-}
+void Rectangle::renderContents(Painter *, const glm::vec2 &, int) {}
 
 void Rectangle::mouseEvent(const MouseEvent &event) {}
 
@@ -156,10 +162,8 @@ void Label::updateSize()
     setSize({width, height});
 }
 
-void Label::render(Painter *painter, const glm::vec2 &pos, int depth)
+void Label::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(painter, pos, depth);
-
     const auto availableWidth = m_size.width - (m_margins.left + m_margins.right);
     const auto availableHeight = m_size.height - (m_margins.top + m_margins.bottom);
 
@@ -252,9 +256,8 @@ void Image::updateSize()
     setSize({width, height});
 }
 
-void Image::render(Painter *painter, const glm::vec2 &pos, int depth)
+void Image::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(painter, pos, depth);
     if (m_pixmap)
     {
         const auto imagePos = pos + glm::vec2(m_margins.left, m_margins.top);
@@ -312,9 +315,8 @@ void Container::setSpacing(float spacing)
     updateLayout();
 }
 
-void Container::render(Painter *painter, const glm::vec2 &pos, int depth)
+void Container::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(painter, pos, depth);
     for (auto &layoutItem : m_layoutItems)
         layoutItem->item->render(painter, pos + layoutItem->offset, depth + 1);
 }
@@ -426,9 +428,8 @@ ScrollArea::ScrollArea(std::unique_ptr<Item> viewportClient)
 {
 }
 
-void ScrollArea::render(Painter *painter, const glm::vec2 &pos, int depth)
+void ScrollArea::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    renderBackground(painter, pos, depth);
     const auto viewportPos = pos + glm::vec2(m_margins.left, m_margins.top);
     const auto prevClipRect = painter->clipRect();
     const auto viewportRect = RectF{viewportPos, viewportPos + glm::vec2(m_viewportSize.width, m_viewportSize.height)};

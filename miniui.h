@@ -84,7 +84,8 @@ public:
     float width() const { return m_size.width; }
     float height() const { return m_size.height; }
 
-    virtual void render(Painter *painter, const glm::vec2 &pos, int depth = 0) = 0;
+    void render(Painter *painter, const glm::vec2 &pos, int depth = 0);
+
     virtual void mouseEvent(const MouseEvent &event) = 0;
     virtual Item *findItem(const glm::vec2 &pos);
 
@@ -97,6 +98,7 @@ public:
 protected:
     void setSize(Size size);
     void renderBackground(Painter *painter, const glm::vec2 &pos, int depth);
+    virtual void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) = 0;
 
     Size m_size;
     ResizedEvent m_resizedEvent;
@@ -109,13 +111,15 @@ public:
     Rectangle(Size size);
     Rectangle(float width, float height);
 
-    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
     void mouseEvent(const MouseEvent &event) override;
 
     using Item::setSize;
     void setSize(float width, float height);
     void setWidth(float width);
     void setHeight(float height);
+
+protected:
+    void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 };
 
 class Label : public Item
@@ -141,10 +145,11 @@ public:
     void setFixedHeight(float height);
     float fixedHeight() const { return m_fixedHeight; }
 
-    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
-
     glm::vec4 color = glm::vec4(0, 0, 0, 1);
     Alignment alignment = Alignment::VCenter | Alignment::Left;
+
+protected:
+    void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
 private:
     void updateSize();
@@ -172,9 +177,10 @@ public:
     void setMargins(Margins margins);
     Margins margins() const { return m_margins; }
 
-    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
-
     glm::vec4 color = glm::vec4(1, 1, 1, 1);
+
+protected:
+    void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
 private:
     void updateSize();
@@ -188,7 +194,6 @@ class Container : public Item
 {
 public:
     void mouseEvent(const MouseEvent &event) override;
-    void render(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
     Item *findItem(const glm::vec2 &pos) override;
 
     void addItem(std::unique_ptr<Item> item);
@@ -202,6 +207,8 @@ public:
     virtual void updateLayout() = 0;
 
 protected:
+    void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
+
     struct LayoutItem
     {
         glm::vec2 offset;
@@ -245,7 +252,6 @@ public:
     explicit ScrollArea(std::unique_ptr<Item> viewportClient);
     ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient);
 
-    virtual void render(Painter *painter, const glm::vec2 &pos, int depth = 0);
     virtual void mouseEvent(const MouseEvent &event);
 
     void setMargins(Margins margins);
@@ -253,6 +259,9 @@ public:
 
     void setViewportSize(Size size);
     Size viewportSize() const;
+
+protected:
+    void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
 private:
     void updateSize();
