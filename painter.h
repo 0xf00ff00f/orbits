@@ -42,6 +42,8 @@ public:
     void drawPixmap(const PackedPixmap &pixmap, const RectF &rect, const glm::vec4 &color, int depth);
     void drawText(std::u32string_view text, const glm::vec2 &pos, const glm::vec4 &color, int depth);
     void drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth);
+    void drawCapsule(const RectF &rect, const glm::vec4 &color, int depth);
+    void drawRoundedRect(const RectF &rect, float cornerRadius, const glm::vec4 &color, int depth);
 
 private:
     void render();

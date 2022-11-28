@@ -35,7 +35,7 @@ void Painter::updateTransformMatrix()
 void Painter::begin()
 {
     m_font = nullptr;
-    setClipRect(RectF{{0, 0}, {m_windowWidth, m_windowHeight}});
+    setClipRect({{0, 0}, {m_windowWidth, m_windowHeight}});
     m_spriteBatcher->begin();
 }
 
@@ -111,7 +111,91 @@ void Painter::drawCircle(const glm::vec2 &center, float radius, const glm::vec4 
     if (m_clipRect.intersects(rect))
     {
         m_spriteBatcher->setBatchProgram(ShaderManager::Circle);
-        m_spriteBatcher->addSprite(nullptr, rect, RectF{{0, 0}, {1, 1}}, color, depth);
+        m_spriteBatcher->addSprite(nullptr, rect, {{0, 0}, {1, 1}}, color, depth);
     }
 }
+
+void Painter::drawCapsule(const RectF &rect, const glm::vec4 &color, int depth)
+{
+    if (!m_clipRect.intersects(rect))
+        return;
+    m_spriteBatcher->setBatchProgram(ShaderManager::Circle);
+    const auto width = rect.width();
+    const auto height = rect.height();
+
+    auto addPatch = [this, &color, depth](const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec2 &t0,
+                                          const glm::vec2 &t1) {
+        m_spriteBatcher->addSprite(nullptr, {p0, p1}, {t0, t1}, color, depth);
+    };
+
+    if (width > height)
+    {
+        // horizontal
+        const float radius = 0.5f * height;
+
+        const auto x0 = rect.min.x;
+        const auto x1 = rect.min.x + radius;
+        const auto x2 = rect.max.x - radius;
+        const auto x3 = rect.max.x;
+        const auto y0 = 0.5f * (rect.min.y + rect.max.y) - radius;
+        const auto y1 = 0.5f * (rect.min.y + rect.max.y) + radius;
+
+        addPatch({x0, y0}, {x1, y1}, {0.0f, 0.0f}, {0.5f, 1.0f});
+        addPatch({x1, y0}, {x2, y1}, {0.5f, 0.0f}, {0.5f, 1.0f});
+        addPatch({x2, y0}, {x3, y1}, {0.5f, 0.0f}, {1.0f, 1.0f});
+    }
+    else
+    {
+        // vertical
+        const float radius = 0.5f * width;
+
+        const auto y0 = rect.min.y;
+        const auto y1 = rect.min.y + radius;
+        const auto y2 = rect.max.y - radius;
+        const auto y3 = rect.max.y;
+        const auto x0 = 0.5f * (rect.min.x + rect.max.x) - radius;
+        const auto x1 = 0.5f * (rect.min.x + rect.max.x) + radius;
+
+        addPatch({x0, y0}, {x1, y1}, {0.0f, 0.0f}, {1.0f, 0.5f});
+        addPatch({x0, y1}, {x1, y2}, {0.0f, 0.5f}, {1.0f, 0.5f});
+        addPatch({x0, y2}, {x1, y3}, {0.0f, 0.5f}, {1.0f, 1.0f});
+    }
+}
+
+void Painter::drawRoundedRect(const RectF &rect, float cornerRadius, const glm::vec4 &color, int depth)
+{
+    if (!m_clipRect.intersects(rect))
+        return;
+    const auto width = rect.width();
+    const auto height = rect.height();
+    const auto radius = std::min(std::min(cornerRadius, 0.5f * width), 0.5f * height);
+
+    const auto x0 = rect.min.x;
+    const auto x1 = rect.min.x + radius;
+    const auto x2 = rect.max.x - radius;
+    const auto x3 = rect.max.x;
+
+    const auto y0 = rect.min.y;
+    const auto y1 = rect.min.y + radius;
+    const auto y2 = rect.max.y - radius;
+    const auto y3 = rect.max.y;
+
+    auto addPatch = [this, &color, depth](const glm::vec2 &p0, const glm::vec2 &p1, const glm::vec2 &t0,
+                                          const glm::vec2 &t1) {
+        m_spriteBatcher->addSprite(nullptr, {p0, p1}, {t0, t1}, color, depth);
+    };
+
+    addPatch({x0, y0}, {x1, y1}, {0.0f, 0.0f}, {0.5f, 0.5f});
+    addPatch({x1, y0}, {x2, y1}, {0.5f, 0.0f}, {0.5f, 0.5f});
+    addPatch({x2, y0}, {x3, y1}, {0.5f, 0.0f}, {1.0f, 0.5f});
+
+    addPatch({x0, y1}, {x1, y2}, {0.0f, 0.5f}, {0.5f, 0.5f});
+    addPatch({x1, y1}, {x2, y2}, {0.5f, 0.5f}, {0.5f, 0.5f});
+    addPatch({x2, y1}, {x3, y2}, {0.5f, 0.5f}, {1.0f, 0.5f});
+
+    addPatch({x0, y2}, {x1, y3}, {0.0f, 0.5f}, {0.5f, 1.0f});
+    addPatch({x1, y2}, {x2, y3}, {0.5f, 0.5f}, {0.5f, 1.0f});
+    addPatch({x2, y2}, {x3, y3}, {0.5f, 0.5f}, {1.0f, 1.0f});
+}
+
 } // namespace miniui

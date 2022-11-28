@@ -140,7 +140,10 @@ void Game::render()
     auto *painter = system->uiPainter();
     painter->begin();
     m_item->render(painter, m_itemOffset);
-    painter->drawCircle(glm::vec2(400, 200), 160, glm::vec4(1, 1, 1, 1), 1000);
+    painter->drawCircle({400, 200}, 160, {1, 1, 1, 0.5}, 1000);
+    painter->drawCapsule({{40, 40}, {80, 150}}, {1, 1, 1, 0.5}, 1000);
+    painter->drawCapsule({{600, 400}, {800, 450}}, {1, 1, 1, 0.5}, 1000);
+    painter->drawRoundedRect({{600, 600}, {800, 720}}, 12.0f, {1, 1, 1, 0.5}, 1000);
     painter->end();
     glDisable(GL_SCISSOR_TEST);
 }
