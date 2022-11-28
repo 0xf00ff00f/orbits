@@ -67,7 +67,6 @@ private:
     ShaderManager::Program m_batchProgram = ShaderManager::Program::Flat;
     bool m_bufferAllocated = false;
     int m_bufferOffset = 0;
-    RectF m_clipRect;
 };
 
 } // namespace gl
