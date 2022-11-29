@@ -92,9 +92,3 @@ inline Rect<Point> operator&(Rect<Point> lhs, const Rect<Point> &rhs)
 
 using RectF = Rect<glm::vec2>;
 using RectI = Rect<glm::ivec2>;
-
-template<typename Point>
-using Quad = std::array<Point, 4>;
-
-using QuadF = Quad<glm::vec2>;
-using QuadI = Quad<glm::ivec2>;
