@@ -71,8 +71,6 @@ struct Size
     bool operator==(const Size &other) const { return width == other.width && height == other.height; }
 };
 
-class Container;
-
 class Item
 {
 public:
@@ -166,8 +164,8 @@ private:
     Margins m_margins;
     float m_contentWidth = 0;
     float m_contentHeight = 0;
-    float m_fixedWidth = -1;  // ignored if not > 0
-    float m_fixedHeight = -1; // ignored if not > 0
+    float m_fixedWidth = -1;  // ignored if < 0
+    float m_fixedHeight = -1; // ignored if < 0
 };
 
 class Image : public Item
@@ -211,9 +209,9 @@ public:
     void setSpacing(float spacing);
     float spacing() const { return m_spacing; }
 
+protected:
     virtual void updateLayout() = 0;
 
-protected:
     void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
     struct LayoutItem
