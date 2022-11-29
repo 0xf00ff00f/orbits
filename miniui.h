@@ -87,8 +87,6 @@ public:
     virtual void mouseEvent(const MouseEvent &event) = 0;
     virtual Item *findItem(const glm::vec2 &pos);
 
-    ResizedSignal &resizedSignal() { return m_resizedSignal; }
-
     enum class Shape
     {
         Rectangle,
@@ -100,13 +98,14 @@ public:
     float cornerRadius = 0.0f;
     Alignment containerAlignment = Alignment::VCenter | Alignment::Left;
 
+    ResizedSignal resizedSignal;
+
 protected:
     void setSize(Size size);
     void renderBackground(Painter *painter, const glm::vec2 &pos, int depth);
     virtual void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) = 0;
 
     Size m_size;
-    ResizedSignal m_resizedSignal;
 };
 
 class Rectangle : public Item
