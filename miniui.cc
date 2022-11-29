@@ -27,7 +27,17 @@ void Item::renderBackground(Painter *painter, const glm::vec2 &pos, int depth)
     if (!fillBackground)
         return;
     const auto rect = RectF{pos, pos + glm::vec2(width(), height())};
-    painter->drawRect(rect, bgColor, depth);
+    switch (shape)
+    {
+    case Shape::Rectangle:
+        painter->drawRect(rect, backgroundColor, depth);
+        break;
+    case Shape::RoundedRectangle:
+        painter->drawRoundedRect(rect, cornerRadius, backgroundColor, depth);
+        break;
+    default:
+        break;
+    }
 }
 
 void Item::setSize(Size size)

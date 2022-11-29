@@ -166,6 +166,7 @@ void Painter::drawRoundedRect(const RectF &rect, float cornerRadius, const glm::
 {
     if (!m_clipRect.intersects(rect))
         return;
+    m_spriteBatcher->setBatchProgram(ShaderManager::Circle);
     const auto width = rect.width();
     const auto height = rect.height();
     const auto radius = std::min(std::min(cornerRadius, 0.5f * width), 0.5f * height);

@@ -12,98 +12,163 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include <string>
 
 Game::Game()
     : m_mesh(std::make_unique<gl::Mesh<Vertex>>())
     , m_item(std::make_unique<miniui::Column>())
 {
     using namespace std::literals;
+    using namespace miniui;
 
-    auto *container = static_cast<miniui::Container *>(m_item.get());
+    auto *fontCache = System::instance()->fontCache();
+
+    auto *titleFont = fontCache->font("OpenSans_Regular", 40);
+    auto *smallFont = fontCache->font("OpenSans_Regular", 32);
+    auto *tinyFont = fontCache->font("OpenSans_Regular", 20);
+
+    auto *container = static_cast<Container *>(m_item.get());
     container->fillBackground = true;
-    container->bgColor = glm::vec4(1, 0, 0, 0.5);
+    container->backgroundColor = glm::vec4(1, 0, 0, 0.5);
+    container->shape = Item::Shape::RoundedRectangle;
+    container->cornerRadius = 12;
     container->setMargins({10, 10, 10, 10});
     container->setSpacing(5);
 
-    auto makeLabel = [](std::u32string_view text, int fontSize) {
-        auto label = std::make_unique<miniui::Label>(text);
-        label->fillBackground = true;
-        label->bgColor = glm::vec4(0, 1, 0, 0.5);
-        label->setMargins({10, 10, 10, 10});
-        label->setFont(System::instance()->fontCache()->font("OpenSans_Regular", fontSize));
-        return label;
+    auto makeLabel = [](std::u32string_view text, Font *font) {
+        auto l = std::make_unique<Label>(text);
+        l->color = glm::vec4(1, 1, 1, 1);
+        l->setFont(font);
+        return l;
     };
-    {
-        auto l0 = makeLabel(U"Lorem ipsum", 80);
-        l0->setFixedWidth(240);
-        l0->setFixedHeight(70);
-        l0->alignment = miniui::Alignment::Right | miniui::Alignment::Bottom;
-        container->addItem(std::move(l0));
-    }
-    container->addItem(makeLabel(U"The quick brown fox"sv, 44));
-    container->addItem(makeLabel(U"Lorem ipsum"sv, 44));
 
     {
-        auto rect = std::make_unique<miniui::Rectangle>();
-        rect->setSize(200, 20);
-        rect->fillBackground = true;
-        rect->bgColor = glm::vec4(1, 0, 0, 1);
-        rect->containerAlignment = miniui::Alignment::HCenter;
-        container->addItem(std::move(rect));
+        auto l = makeLabel(U"EASY MODE"sv, titleFont);
+        l->containerAlignment = Alignment::HCenter;
+        container->addItem(std::move(l));
     }
 
+    // title row
     {
-        auto row = std::make_unique<miniui::Row>();
-        row->fillBackground = true;
-        row->bgColor = glm::vec4(1, 1, 0, 0.5);
-        row->containerAlignment = miniui::Alignment::Right;
-        row->setMargins({20, 20, 20, 20});
-        row->setSpacing(20);
-        row->setMinimumHeight(200);
-        row->addItem(makeLabel(U"Here"sv, 30));
-        row->addItem(makeLabel(U"is"sv, 40));
-        row->addItem(makeLabel(U"some"sv, 50));
-        row->addItem(makeLabel(U"text"sv, 60));
+        auto row = std::make_unique<Row>();
+
+        {
+            auto r = std::make_unique<Rectangle>();
+            r->setSize(61, 1);
+            row->addItem(std::move(r));
+        }
+
+        {
+            auto l = makeLabel(U"NAME"sv, smallFont);
+            l->alignment = Alignment::Left;
+            l->setFixedWidth(200);
+            row->addItem(std::move(l));
+        }
+
+        {
+            auto r = std::make_unique<Rectangle>();
+            r->fillBackground = true;
+            r->backgroundColor = glm::vec4(1, 1, 1, 0.5);
+            r->setSize(1, 20);
+            row->addItem(std::move(r));
+        }
+
+        {
+            auto l = makeLabel(U"SCORE"sv, smallFont);
+            l->alignment = Alignment::HCenter;
+            l->setFixedWidth(200);
+            row->addItem(std::move(l));
+        }
+
+        {
+            auto r = std::make_unique<Rectangle>();
+            r->fillBackground = true;
+            r->backgroundColor = glm::vec4(1, 1, 1, 0.5);
+            r->setSize(1, 20);
+            row->addItem(std::move(r));
+        }
+
+        {
+            auto l = makeLabel(U"ACCURACY"sv, smallFont);
+            l->alignment = Alignment::Right;
+            l->setFixedWidth(200);
+            l->color = glm::vec4(1, 1, 1, 1);
+            row->addItem(std::move(l));
+        }
+
+        {
+            auto r = std::make_unique<Rectangle>();
+            r->setSize(10, 1);
+            row->addItem(std::move(r));
+        }
+
         container->addItem(std::move(row));
     }
 
     {
-        auto row = std::make_unique<miniui::Row>();
-        row->fillBackground = true;
-        row->bgColor = glm::vec4(0, 0, 0.5, 1);
-        row->setSpacing(30);
+        auto entryColumn = std::make_unique<Column>();
+        entryColumn->setSpacing(5);
 
-        row->addItem(std::make_unique<miniui::Image>("peppers.jpg"));
+        struct Entry
+        {
+            std::u32string name;
+            std::u32string score;
+            std::u32string accuracy;
+        };
+        std::vector<Entry> entries = {
+            {U"Erwin A.", U"123,123,123", U"99.51%"},    {U"Mary B.", U"122,737,212", U"97.53%"},
+            {U"John C.", U"23,123,423", U"96.27%"},      {U"Alice D.", U"123,123,123", U"99.51%"},
+            {U"Bob E.", U"122,737,212", U"97.53%"},      {U"Cristina F.", U"23,123,423", U"96.27%"},
+            {U"Sophie G.", U"23,123,423", U"96.27%"},    {U"Jim H.", U"23,123,423", U"96.27%"},
+            {U"Francisco I.", U"23,123,423", U"96.27%"},
+        };
+        for (size_t i = 0; i < entries.size(); ++i)
+        {
+            auto row = std::make_unique<Row>();
+            row->fillBackground = true;
+            row->shape = Item::Shape::RoundedRectangle;
+            row->cornerRadius = 8;
+            row->backgroundColor = glm::vec4(1, 1, 1, 0.25);
+            row->setMargins({10, 10, 10, 10});
+            row->setSpacing(1);
 
-        auto l0 = makeLabel(U"click"sv, 60);
-        l0->containerAlignment = miniui::Alignment::Bottom;
-        row->addItem(std::move(l0));
+            auto indexText = std::to_string(i + 1) + std::string(".");
+            auto index = makeLabel(std::u32string(indexText.begin(), indexText.end()), smallFont);
+            index->setFixedWidth(50);
+            row->addItem(std::move(index));
 
-        auto l1 = makeLabel(U"here"sv, 60);
-        l1->containerAlignment = miniui::Alignment::VCenter;
-        row->addItem(std::move(l1));
+            {
+                auto c = std::make_unique<Column>();
 
-        auto l2 = makeLabel(U"plos"sv, 60);
-        l2->containerAlignment = miniui::Alignment::Top;
-        row->addItem(std::move(l2));
+                auto name = makeLabel(entries[i].name, smallFont);
+                name->setFixedWidth(200);
+                c->addItem(std::move(name));
 
-        auto l3 = makeLabel(U""sv, 120);
-        l3->containerAlignment = miniui::Alignment::Bottom;
-        m_counterLabel = l3.get();
-        row->addItem(std::move(l3));
+                auto type = makeLabel(U"Lorem ipsum"sv, tinyFont);
+                c->addItem(std::move(type));
 
-        auto scrollArea = std::make_unique<miniui::ScrollArea>(std::move(row));
-        scrollArea->fillBackground = true;
-        scrollArea->bgColor = glm::vec4(0.5, 0, 0, 1);
-        scrollArea->setViewportSize({400, 200});
+                row->addItem(std::move(c));
+            }
+
+            auto score = makeLabel(entries[i].score, smallFont);
+            score->setFixedWidth(200);
+            score->alignment = Alignment::HCenter;
+            row->addItem(std::move(score));
+
+            auto accuracy = makeLabel(entries[i].accuracy, smallFont);
+            accuracy->setFixedWidth(200);
+            accuracy->alignment = Alignment::Right;
+            row->addItem(std::move(accuracy));
+
+            entryColumn->addItem(std::move(row));
+        }
+
+        const auto columnWidth = entryColumn->width();
+
+        auto scrollArea = std::make_unique<ScrollArea>(std::move(entryColumn));
+        scrollArea->setViewportSize({columnWidth, 400});
 
         container->addItem(std::move(scrollArea));
-    }
-
-    {
-        auto l = makeLabel(U"Sphinx of black quartz"sv, 44);
-        l->containerAlignment = miniui::Alignment::Right;
-        container->addItem(std::move(l));
     }
 
     initialize();
@@ -140,10 +205,12 @@ void Game::render()
     auto *painter = system->uiPainter();
     painter->begin();
     m_item->render(painter, m_itemOffset);
+#if 0
     painter->drawCircle({400, 200}, 160, {1, 1, 1, 0.5}, 1000);
     painter->drawCapsule({{40, 40}, {80, 150}}, {1, 1, 1, 0.5}, 1000);
-    painter->drawCapsule({{600, 400}, {800, 450}}, {1, 1, 1, 0.5}, 1000);
-    painter->drawRoundedRect({{600, 600}, {800, 720}}, 12.0f, {1, 1, 1, 0.5}, 1000);
+    painter->drawCapsule({{200, 400}, {400, 450}}, {1, 1, 1, 0.5}, 1000);
+    painter->drawRoundedRect({{200, 600}, {400, 720}}, 12.0f, {1, 1, 1, 0.5}, 1000);
+#endif
     painter->end();
     glDisable(GL_SCISSOR_TEST);
 }
@@ -151,8 +218,10 @@ void Game::render()
 void Game::update(float elapsed)
 {
     m_time += elapsed;
+#if 0
     auto text = std::to_string(static_cast<int>(m_time * 10.0f));
     m_counterLabel->setText(std::u32string(text.begin(), text.end()));
+#endif
 }
 
 void Game::initialize()

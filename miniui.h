@@ -91,8 +91,15 @@ public:
 
     ResizedEvent &resizedEvent() { return m_resizedEvent; }
 
+    enum class Shape
+    {
+        Rectangle,
+        RoundedRectangle
+    };
+    Shape shape = Shape::Rectangle;
     bool fillBackground = false;
-    glm::vec4 bgColor;
+    glm::vec4 backgroundColor;
+    float cornerRadius = 0.0f;
     Alignment containerAlignment = Alignment::VCenter | Alignment::Left;
 
 protected:
@@ -252,7 +259,7 @@ public:
     explicit ScrollArea(std::unique_ptr<Item> viewportClient);
     ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient);
 
-    virtual void mouseEvent(const MouseEvent &event);
+    void mouseEvent(const MouseEvent &event) override;
 
     void setMargins(Margins margins);
     Margins margins() const { return m_margins; }
