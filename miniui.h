@@ -2,7 +2,7 @@
 
 #include "textureatlas.h"
 #include "font.h"
-#include "event.h"
+#include "signal.h"
 #include "mouseevent.h"
 
 #include <glm/glm.hpp>
@@ -74,7 +74,7 @@ struct Size
 class Item
 {
 public:
-    using ResizedEvent = Event<std::function<void(Size)>>;
+    using ResizedSignal = Signal<std::function<void(Size)>>;
 
     virtual ~Item();
 
@@ -87,7 +87,7 @@ public:
     virtual void mouseEvent(const MouseEvent &event) = 0;
     virtual Item *findItem(const glm::vec2 &pos);
 
-    ResizedEvent &resizedEvent() { return m_resizedEvent; }
+    ResizedSignal &resizedSignal() { return m_resizedSignal; }
 
     enum class Shape
     {
@@ -106,7 +106,7 @@ protected:
     virtual void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) = 0;
 
     Size m_size;
-    ResizedEvent m_resizedEvent;
+    ResizedSignal m_resizedSignal;
 };
 
 class Rectangle : public Item

@@ -6,30 +6,30 @@
 
 class Connection;
 
-class EventBase
+class SignalBase
 {
 public:
-    virtual ~EventBase();
+    virtual ~SignalBase();
     virtual void disconnect(Connection *connection) = 0;
 };
 
 class Connection
 {
 public:
-    explicit Connection(EventBase *e);
+    explicit Connection(SignalBase *e);
     ~Connection();
 
-    void setEvent(EventBase *e);
+    void setEvent(SignalBase *e);
 
 private:
-    EventBase *m_event;
+    SignalBase *m_event;
 };
 
 template<typename HandlerType>
-class Event : public EventBase
+class Signal : public SignalBase
 {
 public:
-    ~Event() override
+    ~Signal() override
     {
         for (auto &c : m_connections)
             c.connection->setEvent(nullptr);

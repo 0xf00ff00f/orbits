@@ -45,7 +45,7 @@ void Item::setSize(Size size)
     if (size == m_size)
         return;
     m_size = size;
-    m_resizedEvent.notify(m_size);
+    m_resizedSignal.notify(m_size);
 }
 
 Item *Item::findItem(const glm::vec2 &pos)
@@ -300,7 +300,7 @@ void Container::mouseEvent(const MouseEvent &event)
 
 void Container::addItem(std::unique_ptr<Item> item)
 {
-    auto resizedConnection = item->resizedEvent().connect([this](Size size) {
+    auto resizedConnection = item->resizedSignal().connect([this](Size size) {
         log("child resized: %f %f\n", size.width, size.height);
         updateLayout();
     });
