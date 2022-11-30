@@ -177,7 +177,7 @@ void Label::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
     const auto availableWidth = m_size.width - (m_margins.left + m_margins.right);
     const auto availableHeight = m_size.height - (m_margins.top + m_margins.bottom);
 
-    bool clipped = availableWidth < m_contentWidth - 0.5f || availableHeight < m_contentHeight - 0.5f;
+    const bool clipped = availableWidth < m_contentWidth - 0.5f || availableHeight < m_contentHeight - 0.5f;
     RectF prevClipRect;
     if (clipped)
     {
@@ -254,25 +254,88 @@ void Image::setMargins(Margins margins)
     updateSize();
 }
 
+void Image::setFixedWidth(float width)
+{
+    if (width == m_fixedWidth)
+        return;
+    m_fixedWidth = width;
+    updateSize();
+}
+
+void Image::setFixedHeight(float height)
+{
+    if (height == m_fixedHeight)
+        return;
+    m_fixedHeight = height;
+    updateSize();
+}
+
 void Image::updateSize()
 {
-    float height = m_margins.top + m_margins.bottom;
-    float width = m_margins.left + m_margins.right;
-    if (m_pixmap)
-    {
-        width += m_pixmap->width;
-        height += m_pixmap->height;
-    }
+    const float height = [this] {
+        if (m_fixedHeight > 0)
+            return m_fixedHeight;
+        float height = m_margins.top + m_margins.bottom;
+        if (m_pixmap)
+            height += m_pixmap->height;
+        return height;
+    }();
+    const float width = [this] {
+        if (m_fixedWidth > 0)
+            return m_fixedWidth;
+        float width = m_margins.left + m_margins.right;
+        if (m_pixmap)
+            width += m_pixmap->width;
+        return width;
+    }();
     setSize({width, height});
 }
 
 void Image::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
-    if (m_pixmap)
+    if (!m_pixmap)
+        return;
+    const auto availableWidth = m_size.width - (m_margins.left + m_margins.right);
+    const auto availableHeight = m_size.height - (m_margins.top + m_margins.bottom);
+    const bool clipped = availableWidth < m_pixmap->width - 0.5f || availableHeight < m_pixmap->height - 0.5f;
+
+    const auto xOffset = [this, availableWidth] {
+        const auto horizAlignment = alignment & (Alignment::Left | Alignment::HCenter | Alignment::Right);
+        switch (horizAlignment)
+        {
+        case Alignment::Left:
+        default:
+            return 0.0f;
+        case Alignment::HCenter:
+            return 0.5f * (availableWidth - m_pixmap->width);
+        case Alignment::Right:
+            return availableWidth - m_pixmap->width;
+        }
+    }();
+    const auto yOffset = [this, availableHeight] {
+        const auto vertAlignment = alignment & (Alignment::Top | Alignment::VCenter | Alignment::Bottom);
+        switch (vertAlignment)
+        {
+        case Alignment::Top:
+            return 0.0f;
+        case Alignment::VCenter:
+        default:
+            return 0.5f * (availableHeight - m_pixmap->height);
+        case Alignment::Bottom:
+            return availableHeight - m_pixmap->height;
+        }
+    }();
+    const auto topLeft = pos + glm::vec2(m_margins.left, m_margins.top);
+    const auto imagePos = topLeft + glm::vec2(xOffset, yOffset);
+    const auto rect = RectF{imagePos, imagePos + glm::vec2(m_pixmap->width, m_pixmap->height)};
+    if (!clipped)
     {
-        const auto imagePos = pos + glm::vec2(m_margins.left, m_margins.top);
-        const auto rect = RectF{imagePos, imagePos + glm::vec2(m_pixmap->width, m_pixmap->height)};
         painter->drawPixmap(*m_pixmap, rect, color, depth);
+    }
+    else
+    {
+        const auto clipRect = RectF{topLeft, topLeft + glm::vec2(availableWidth, availableHeight)};
+        painter->drawPixmap(*m_pixmap, rect, clipRect, color, depth);
     }
 }
 

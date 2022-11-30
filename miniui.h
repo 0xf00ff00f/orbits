@@ -181,7 +181,14 @@ public:
     void setMargins(Margins margins);
     Margins margins() const { return m_margins; }
 
+    void setFixedWidth(float width);
+    float fixedWidth() const { return m_fixedWidth; }
+
+    void setFixedHeight(float height);
+    float fixedHeight() const { return m_fixedHeight; }
+
     glm::vec4 color = glm::vec4(1, 1, 1, 1);
+    Alignment alignment = Alignment::VCenter | Alignment::Left;
 
 protected:
     void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
@@ -192,6 +199,8 @@ private:
     std::string m_source;
     std::optional<PackedPixmap> m_pixmap;
     Margins m_margins;
+    float m_fixedWidth = -1;  // ignored if < 0
+    float m_fixedHeight = -1; // ignored if < 0
 };
 
 class Container : public Item

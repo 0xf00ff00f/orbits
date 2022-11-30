@@ -78,6 +78,25 @@ void Painter::drawPixmap(const PackedPixmap &pixmap, const RectF &rect, const gl
     }
 }
 
+void Painter::drawPixmap(const PackedPixmap &pixmap, const RectF &rect, const RectF &clipRect, const glm::vec4 &color,
+                         int depth)
+{
+    if (m_clipRect.intersects(rect) && m_clipRect.intersects(rect))
+    {
+        m_spriteBatcher->setBatchProgram(ShaderManager::Decal);
+        const auto texPos = [&rect, &texCoord = pixmap.texCoord](const glm::vec2 &p) {
+            const float x =
+                (p.x - rect.min.x) * (texCoord.max.x - texCoord.min.x) / (rect.max.x - rect.min.x) + texCoord.min.x;
+            const float y =
+                (p.y - rect.min.y) * (texCoord.max.y - texCoord.min.y) / (rect.max.y - rect.min.y) + texCoord.min.y;
+            return glm::vec2(x, y);
+        };
+        const auto spriteRect = rect.intersected(clipRect);
+        const auto texCoord = RectF{texPos(spriteRect.min), texPos(spriteRect.max)};
+        m_spriteBatcher->addSprite(pixmap.texture, spriteRect, texCoord, color, depth);
+    }
+}
+
 void Painter::drawText(std::u32string_view text, const glm::vec2 &pos, const glm::vec4 &color, int depth)
 {
     if (!m_font)
