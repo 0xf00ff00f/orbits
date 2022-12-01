@@ -491,7 +491,7 @@ void Row::updateLayout()
 }
 
 ScrollArea::ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient)
-    : m_viewportClient(std::move(viewportClient))
+    : m_contentItem(std::move(viewportClient))
 {
     updateSize();
 }
@@ -507,7 +507,7 @@ void ScrollArea::renderContents(Painter *painter, const glm::vec2 &pos, int dept
     const auto prevClipRect = painter->clipRect();
     const auto viewportRect = RectF{viewportPos, viewportPos + glm::vec2(m_viewportSize.width, m_viewportSize.height)};
     painter->setClipRect(viewportRect);
-    m_viewportClient->render(painter, viewportPos + m_viewportOffset, depth + 1);
+    m_contentItem->render(painter, viewportPos + m_viewportOffset, depth + 1);
     painter->setClipRect(prevClipRect);
 }
 
@@ -527,9 +527,8 @@ void ScrollArea::mouseEvent(const MouseEvent &event)
         {
             const auto offset = event.position - m_mousePressPos;
             m_viewportOffset += offset;
-            m_viewportOffset =
-                glm::max(m_viewportOffset, glm::vec2(m_viewportSize.width - m_viewportClient->width(),
-                                                     m_viewportSize.height - m_viewportClient->height()));
+            m_viewportOffset = glm::max(m_viewportOffset, glm::vec2(m_viewportSize.width - m_contentItem->width(),
+                                                                    m_viewportSize.height - m_contentItem->height()));
             m_viewportOffset = glm::min(m_viewportOffset, glm::vec2(0, 0));
             m_mousePressPos = event.position;
         }

@@ -262,7 +262,7 @@ private:
 class ScrollArea : public Item
 {
 public:
-    explicit ScrollArea(std::unique_ptr<Item> viewportClient);
+    explicit ScrollArea(std::unique_ptr<Item> contentItem);
     ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient);
 
     void mouseEvent(const MouseEvent &event) override;
@@ -279,7 +279,7 @@ protected:
 private:
     void updateSize();
 
-    std::unique_ptr<Item> m_viewportClient;
+    std::unique_ptr<Item> m_contentItem;
     Margins m_margins;
     Size m_viewportSize;
     glm::vec2 m_viewportOffset = glm::vec2(0, 0);
