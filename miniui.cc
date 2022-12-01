@@ -345,8 +345,7 @@ void Image::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 
 Item *Container::findGrabbableItem(const glm::vec2 &pos)
 {
-    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
-    if (!rect.contains(pos))
+    if (!rect().contains(pos))
         return nullptr;
     for (auto &layoutItem : m_layoutItems)
     {
@@ -362,8 +361,7 @@ Item *Container::findGrabbableItem(const glm::vec2 &pos)
 bool Container::mouseEvent(const MouseEvent &event)
 {
     const auto &pos = event.position;
-    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
-    if (!rect.contains(pos))
+    if (!rect().contains(pos))
         return false;
     for (auto &layoutItem : m_layoutItems)
     {
@@ -526,7 +524,7 @@ void ScrollArea::renderContents(Painter *painter, const glm::vec2 &pos, int dept
     const auto viewportPos = pos + glm::vec2(m_margins.left, m_margins.top);
     const auto prevClipRect = painter->clipRect();
     const auto viewportRect = RectF{viewportPos, viewportPos + glm::vec2(m_viewportSize.width, m_viewportSize.height)};
-    painter->setClipRect(viewportRect);
+    painter->setClipRect(prevClipRect.intersected(viewportRect));
     m_contentItem->render(painter, viewportPos + m_viewportOffset, depth + 1);
     painter->setClipRect(prevClipRect);
 }
@@ -563,8 +561,11 @@ bool ScrollArea::mouseEvent(const MouseEvent &event)
 
 Item *ScrollArea::findGrabbableItem(const glm::vec2 &pos)
 {
-    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
-    return rect.contains(pos) ? this : nullptr;
+    if (!rect().contains(pos))
+        return nullptr;
+    if (auto *childItem = m_contentItem->findGrabbableItem(pos - m_viewportOffset))
+        return childItem;
+    return this;
 }
 
 void ScrollArea::setMargins(Margins margins)

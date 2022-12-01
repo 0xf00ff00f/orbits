@@ -81,6 +81,7 @@ public:
     Size size() const { return m_size; }
     float width() const { return m_size.width; }
     float height() const { return m_size.height; }
+    RectF rect() const { return RectF{{0, 0}, {m_size.width, m_size.height}}; }
 
     void render(Painter *painter, const glm::vec2 &pos, int depth = 0);
 
