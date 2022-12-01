@@ -261,7 +261,7 @@ class ScrollArea : public Item
 {
 public:
     explicit ScrollArea(std::unique_ptr<Item> contentItem);
-    ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient);
+    ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> contentItem);
 
     bool mouseEvent(const MouseEvent &event) override;
     Item *findGrabbableItem(const glm::vec2 &pos) override;

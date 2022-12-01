@@ -510,14 +510,14 @@ void Row::updateLayout()
     }
 }
 
-ScrollArea::ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient)
-    : m_contentItem(std::move(viewportClient))
+ScrollArea::ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> contentItem)
+    : m_contentItem(std::move(contentItem))
 {
     updateSize();
 }
 
-ScrollArea::ScrollArea(std::unique_ptr<Item> viewportClient)
-    : ScrollArea(0, 0, std::move(viewportClient))
+ScrollArea::ScrollArea(std::unique_ptr<Item> contentItem)
+    : ScrollArea(0, 0, std::move(contentItem))
 {
 }
 
