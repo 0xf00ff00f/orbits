@@ -53,7 +53,9 @@ struct MouseEvent
     {
         Press,
         Release,
-        Move,
+        DragBegin,
+        DragMove,
+        DragEnd,
     };
     Type type;
     MouseButtons buttons;

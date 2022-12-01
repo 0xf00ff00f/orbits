@@ -84,8 +84,8 @@ public:
 
     void render(Painter *painter, const glm::vec2 &pos, int depth = 0);
 
-    virtual void mouseEvent(const MouseEvent &event) = 0;
-    virtual Item *findItem(const glm::vec2 &pos);
+    virtual bool mouseEvent(const MouseEvent &event);
+    virtual Item *findGrabbableItem(const glm::vec2 &pos);
 
     enum class Shape
     {
@@ -115,8 +115,6 @@ public:
     Rectangle(Size size);
     Rectangle(float width, float height);
 
-    void mouseEvent(const MouseEvent &event) override;
-
     using Item::setSize;
     void setSize(float width, float height);
     void setWidth(float width);
@@ -132,7 +130,7 @@ public:
     explicit Label(std::u32string_view text = {});
     Label(Font *font, std::u32string_view text);
 
-    void mouseEvent(const MouseEvent &event) override;
+    bool mouseEvent(const MouseEvent &event) override;
 
     void setFont(Font *font);
     Font *font() const;
@@ -173,7 +171,7 @@ public:
     Image();
     explicit Image(std::string_view source);
 
-    void mouseEvent(const MouseEvent &event) override;
+    bool mouseEvent(const MouseEvent &event) override;
 
     void setSource(std::string_view source);
     const std::string &source() const { return m_source; }
@@ -206,8 +204,8 @@ private:
 class Container : public Item
 {
 public:
-    void mouseEvent(const MouseEvent &event) override;
-    Item *findItem(const glm::vec2 &pos) override;
+    bool mouseEvent(const MouseEvent &event) override;
+    Item *findGrabbableItem(const glm::vec2 &pos) override;
 
     void addItem(std::unique_ptr<Item> item);
 
@@ -265,7 +263,8 @@ public:
     explicit ScrollArea(std::unique_ptr<Item> contentItem);
     ScrollArea(float viewportWidth, float viewportHeight, std::unique_ptr<Item> viewportClient);
 
-    void mouseEvent(const MouseEvent &event) override;
+    bool mouseEvent(const MouseEvent &event) override;
+    Item *findGrabbableItem(const glm::vec2 &pos) override;
 
     void setMargins(Margins margins);
     Margins margins() const { return m_margins; }

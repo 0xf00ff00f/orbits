@@ -48,10 +48,9 @@ void Item::setSize(Size size)
     resizedSignal.notify(m_size);
 }
 
-Item *Item::findItem(const glm::vec2 &pos)
+Item *Item::findGrabbableItem(const glm::vec2 &pos)
 {
-    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
-    return rect.contains(pos) ? this : nullptr;
+    return nullptr;
 }
 
 void Item::render(Painter *painter, const glm::vec2 &pos, int depth)
@@ -61,6 +60,11 @@ void Item::render(Painter *painter, const glm::vec2 &pos, int depth)
         return;
     renderBackground(painter, pos, depth);
     renderContents(painter, pos, depth);
+}
+
+bool Item::mouseEvent(const MouseEvent &)
+{
+    return false;
 }
 
 Rectangle::Rectangle()
@@ -95,8 +99,6 @@ void Rectangle::setHeight(float height)
 
 void Rectangle::renderContents(Painter *, const glm::vec2 &, int) {}
 
-void Rectangle::mouseEvent(const MouseEvent &event) {}
-
 Label::Label(std::u32string_view text)
     : Label(defaultFont(), text)
 {
@@ -109,10 +111,11 @@ Label::Label(Font *font, std::u32string_view text)
     updateSize();
 }
 
-void Label::mouseEvent(const MouseEvent &event)
+bool Label::mouseEvent(const MouseEvent &event)
 {
     if (event.type == MouseEvent::Type::Press)
         log("**** clicked label %s\n", std::string(m_text.begin(), m_text.end()).c_str());
+    return Item::mouseEvent(event);
 }
 
 void Label::setFont(Font *font)
@@ -228,10 +231,11 @@ Image::Image(std::string_view source)
     setSource(source);
 }
 
-void Image::mouseEvent(const MouseEvent &event)
+bool Image::mouseEvent(const MouseEvent &event)
 {
     if (event.type == MouseEvent::Type::Press)
         log("**** clicked image\n");
+    return Item::mouseEvent(event);
 }
 
 void Image::setSource(std::string_view source)
@@ -339,7 +343,7 @@ void Image::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
     }
 }
 
-Item *Container::findItem(const glm::vec2 &pos)
+Item *Container::findGrabbableItem(const glm::vec2 &pos)
 {
     const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
     if (!rect.contains(pos))
@@ -350,15 +354,31 @@ Item *Container::findItem(const glm::vec2 &pos)
         const auto &offset = layoutItem->offset;
         const auto childRect = RectF{layoutItem->offset, layoutItem->offset + glm::vec2(item->width(), item->height())};
         if (childRect.contains(pos))
-            return item->findItem(pos - offset);
+            return item->findGrabbableItem(pos - offset);
     }
-    return this;
+    return nullptr;
 }
 
-void Container::mouseEvent(const MouseEvent &event)
+bool Container::mouseEvent(const MouseEvent &event)
 {
-    if (event.type == MouseEvent::Type::Press)
-        log("**** clicked container\n");
+    const auto &pos = event.position;
+    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
+    if (!rect.contains(pos))
+        return false;
+    for (auto &layoutItem : m_layoutItems)
+    {
+        const auto &item = layoutItem->item;
+        const auto &offset = layoutItem->offset;
+        const auto childRect = RectF{layoutItem->offset, layoutItem->offset + glm::vec2(item->width(), item->height())};
+        if (childRect.contains(pos))
+        {
+            MouseEvent childEvent = event;
+            childEvent.position -= offset;
+            if (item->mouseEvent(childEvent))
+                return true;
+        }
+    }
+    return false;
 }
 
 void Container::addItem(std::unique_ptr<Item> item)
@@ -511,18 +531,18 @@ void ScrollArea::renderContents(Painter *painter, const glm::vec2 &pos, int dept
     painter->setClipRect(prevClipRect);
 }
 
-void ScrollArea::mouseEvent(const MouseEvent &event)
+bool ScrollArea::mouseEvent(const MouseEvent &event)
 {
     switch (event.type)
     {
-    case MouseEvent::Type::Press:
+    case MouseEvent::Type::DragBegin:
         m_dragging = true;
         m_mousePressPos = event.position;
-        break;
-    case MouseEvent::Type::Release:
+        return true;
+    case MouseEvent::Type::DragEnd:
         m_dragging = false;
-        break;
-    case MouseEvent::Type::Move:
+        return true;
+    case MouseEvent::Type::DragMove:
         if (m_dragging)
         {
             const auto offset = event.position - m_mousePressPos;
@@ -532,8 +552,19 @@ void ScrollArea::mouseEvent(const MouseEvent &event)
             m_viewportOffset = glm::min(m_viewportOffset, glm::vec2(0, 0));
             m_mousePressPos = event.position;
         }
-        break;
+        return true;
+    default: {
+        MouseEvent childEvent = event;
+        childEvent.position -= m_viewportOffset;
+        return m_contentItem->mouseEvent(childEvent);
     }
+    }
+}
+
+Item *ScrollArea::findGrabbableItem(const glm::vec2 &pos)
+{
+    const auto rect = RectF{{0, 0}, {m_size.width, m_size.height}};
+    return rect.contains(pos) ? this : nullptr;
 }
 
 void ScrollArea::setMargins(Margins margins)
