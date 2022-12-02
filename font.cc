@@ -67,8 +67,33 @@ float Font::textWidth(std::u32string_view text)
 
 std::unique_ptr<Font::Glyph> Font::initializeGlyph(int codepoint)
 {
-    auto pm = m_textureAtlas->addPixmap(codepointPixmap(codepoint));
-    if (!pm)
+    int ix0, iy0, ix1, iy1;
+    stbtt_GetCodepointBitmapBox(&m_font, codepoint, m_scale, m_scale, &ix0, &iy0, &ix1, &iy1);
+
+    const auto width = ix1 - ix0;
+    const auto height = iy1 - iy0;
+
+    std::vector<unsigned char> pixels;
+    pixels.resize(width * height);
+    stbtt_MakeCodepointBitmap(&m_font, pixels.data(), width, height, width, m_scale, m_scale, codepoint);
+
+    constexpr auto Border = 1;
+
+    Pixmap pixmap;
+    pixmap.width = width + 2 * Border;
+    pixmap.height = height + 2 * Border;
+    pixmap.pixelType = PixelType::Grayscale;
+    pixmap.pixels.resize(pixmap.width * pixmap.height);
+    std::fill(pixmap.pixels.begin(), pixmap.pixels.end(), 0);
+    for (int i = 0; i < height; ++i)
+    {
+        const auto *src = pixels.data() + i * width;
+        auto *dest = pixmap.pixels.data() + (i + Border) * pixmap.width + Border;
+        std::copy(src, src + width, dest);
+    }
+
+    auto packedPixmap = m_textureAtlas->addPixmap(pixmap);
+    if (!packedPixmap)
     {
         log("Couldn't fit glyph %d in texture atlas\n", codepoint);
         return {};
@@ -77,35 +102,18 @@ std::unique_ptr<Font::Glyph> Font::initializeGlyph(int codepoint)
     int advanceWidth, leftSideBearing;
     stbtt_GetCodepointHMetrics(&m_font, codepoint, &advanceWidth, &leftSideBearing);
 
-    int ix0, iy0, ix1, iy1;
-    stbtt_GetCodepointBitmapBox(&m_font, codepoint, m_scale, m_scale, &ix0, &iy0, &ix1, &iy1);
-
-    assert(pm->width == ix1 - ix0);
-    assert(pm->height == iy1 - iy0);
+    ix0 -= Border;
+    ix1 += Border;
+    iy0 -= Border;
+    iy1 += Border;
+    assert(packedPixmap->width == ix1 - ix0);
+    assert(packedPixmap->height == iy1 - iy0);
 
     auto glyph = std::make_unique<Glyph>();
     glyph->boundingBox = RectI{{ix0, iy0}, {ix1, iy1}};
     glyph->advanceWidth = m_scale * advanceWidth;
-    glyph->pixmap = *pm;
+    glyph->pixmap = *packedPixmap;
     return glyph;
-}
-
-Pixmap Font::codepointPixmap(int codepoint) const
-{
-    int ix0, iy0, ix1, iy1;
-    stbtt_GetCodepointBitmapBox(&m_font, codepoint, m_scale, m_scale, &ix0, &iy0, &ix1, &iy1);
-
-    const auto width = ix1 - ix0;
-    const auto height = iy1 - iy0;
-
-    Pixmap pm;
-    pm.width = width;
-    pm.height = height;
-    pm.pixelType = PixelType::Grayscale;
-    pm.pixels.resize(width * height);
-    stbtt_MakeCodepointBitmap(&m_font, pm.pixels.data(), width, height, width, m_scale, m_scale, codepoint);
-
-    return pm;
 }
 
 } // namespace miniui

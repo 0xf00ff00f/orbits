@@ -40,7 +40,6 @@ public:
 
 private:
     std::unique_ptr<Glyph> initializeGlyph(int codepoint);
-    Pixmap codepointPixmap(int codepoint) const;
 
     TextureAtlas *m_textureAtlas;
     std::vector<unsigned char> m_ttfBuffer;
