@@ -113,7 +113,7 @@ Label::Label(Font *font, std::u32string_view text)
 
 bool Label::mouseEvent(const MouseEvent &event)
 {
-    if (event.type == MouseEvent::Type::Press)
+    if (event.type == MouseEvent::Type::Click)
         log("**** clicked label %s\n", std::string(m_text.begin(), m_text.end()).c_str());
     return Item::mouseEvent(event);
 }
@@ -233,7 +233,7 @@ Image::Image(std::string_view source)
 
 bool Image::mouseEvent(const MouseEvent &event)
 {
-    if (event.type == MouseEvent::Type::Press)
+    if (event.type == MouseEvent::Type::Click)
         log("**** clicked image\n");
     return Item::mouseEvent(event);
 }

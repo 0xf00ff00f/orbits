@@ -44,5 +44,6 @@ private:
     glm::vec2 m_itemOffset = glm::vec2(20, 20);
     miniui::Label *m_counterLabel;
     miniui::Item *m_mouseGrabber = nullptr;
+    bool m_aboutToClick = false;
     float m_time = 0.0f;
 };

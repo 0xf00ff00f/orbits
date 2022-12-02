@@ -253,28 +253,38 @@ void Game::initialize()
 void Game::onMouseButtonPress(miniui::MouseButtons button)
 {
     using namespace miniui;
+    const auto pos = m_mousePosition - m_itemOffset;
     m_mouseButtons |= button;
-    m_item->mouseEvent({MouseEvent::Type::Press, button, m_mousePosition - m_itemOffset});
+    m_item->mouseEvent({MouseEvent::Type::Press, button, pos});
     if (button == miniui::MouseButtons::Left)
     {
         assert(m_mouseGrabber == nullptr);
-        m_mouseGrabber = m_item->findGrabbableItem(m_mousePosition - m_itemOffset);
+        m_mouseGrabber = m_item->findGrabbableItem(pos);
         if (m_mouseGrabber)
-            m_mouseGrabber->mouseEvent({MouseEvent::Type::DragBegin, button, m_mousePosition - m_itemOffset});
+        {
+            m_mouseGrabber->mouseEvent({MouseEvent::Type::DragBegin, button, pos});
+        }
     }
+    m_aboutToClick = true;
 }
 
 void Game::onMouseButtonRelease(miniui::MouseButtons button)
 {
     using namespace miniui;
+    const auto pos = m_mousePosition - m_itemOffset;
     m_mouseButtons &= ~button;
-    m_item->mouseEvent({MouseEvent::Type::Release, button, m_mousePosition - m_itemOffset});
+    m_item->mouseEvent({MouseEvent::Type::Release, button, pos});
+    if (m_aboutToClick)
+    {
+        m_item->mouseEvent({MouseEvent::Type::Click, button, pos});
+    }
     if (button == miniui::MouseButtons::Left && m_mouseGrabber != nullptr)
     {
-        const auto event = MouseEvent{MouseEvent::Type::DragEnd, button, m_mousePosition - m_itemOffset};
+        const auto event = MouseEvent{MouseEvent::Type::DragEnd, button, pos};
         m_mouseGrabber->mouseEvent(event);
         m_mouseGrabber = nullptr;
     }
+    m_aboutToClick = false;
 }
 
 void Game::onMouseMove(const glm::vec2 &pos)
@@ -285,4 +295,5 @@ void Game::onMouseMove(const glm::vec2 &pos)
     {
         m_mouseGrabber->mouseEvent({MouseEvent::Type::DragMove, m_mouseButtons, m_mousePosition - m_itemOffset});
     }
+    m_aboutToClick = false;
 }

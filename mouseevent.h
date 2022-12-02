@@ -53,6 +53,7 @@ struct MouseEvent
     {
         Press,
         Release,
+        Click,
         DragBegin,
         DragMove,
         DragEnd,
