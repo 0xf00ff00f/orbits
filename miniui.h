@@ -361,7 +361,7 @@ protected:
     bool m_checked = false;
     ValueAnimation<tweening::InQuadratic<float>, float> m_animation;
     ConnectionPtr m_animationConn;
-    float m_indicatorPosition;
+    float m_indicatorPosition = 0.0f;
 };
 
 } // namespace miniui
