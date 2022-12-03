@@ -132,12 +132,12 @@ class Label : public Item
 {
 public:
     explicit Label(std::u32string_view text = {});
-    Label(Font *font, std::u32string_view text);
+    Label(Font *font, std::u32string_view text = {});
 
     bool mouseEvent(const MouseEvent &event) override;
 
     void setFont(Font *font);
-    Font *font() const;
+    Font *font() const { return m_font; }
 
     void setText(std::u32string_view text);
     const std::u32string &text() const { return m_text; }
@@ -290,6 +290,52 @@ private:
     glm::vec2 m_viewportOffset = glm::vec2(0, 0);
     bool m_dragging = false;
     glm::vec2 m_mousePressPos;
+};
+
+class MultiLineText : public Item
+{
+public:
+    explicit MultiLineText(std::u32string_view text = {});
+    MultiLineText(Font *font, std::u32string_view text = {});
+
+    void setFont(Font *font);
+    Font *font() const { return m_font; }
+
+    void setText(std::u32string_view text);
+    const std::u32string &text() const { return m_text; }
+
+    void setMargins(Margins margins);
+    Margins margins() const { return m_margins; }
+
+    void setFixedWidth(float width);
+    float fixedWidth() const { return m_fixedWidth; }
+
+    void setFixedHeight(float height);
+    float fixedHeight() const { return m_fixedHeight; }
+
+    glm::vec4 color = glm::vec4(0, 0, 0, 1);
+    Alignment alignment = Alignment::VCenter | Alignment::Left;
+
+protected:
+    void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
+
+private:
+    void updateSize();
+    void breakTextLines();
+
+    Font *m_font;
+    std::u32string m_text;
+    Margins m_margins;
+    float m_fixedWidth = 200.0f; // mandatory!
+    float m_fixedHeight = -1;    // ignored if < 0
+    float m_contentWidth = 0.0f;
+    float m_contentHeight = 0.0f;
+    struct TextLine
+    {
+        std::u32string_view text;
+        float width;
+    };
+    std::vector<TextLine> m_lines;
 };
 
 class Switch : public Item

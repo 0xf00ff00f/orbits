@@ -675,4 +675,195 @@ void Switch::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
     painter->drawCircle(center, indicatorRadius, indicatorColor, depth + 1);
 }
 
+MultiLineText::MultiLineText(std::u32string_view text)
+    : MultiLineText(defaultFont(), text)
+{
+}
+
+MultiLineText::MultiLineText(Font *font, std::u32string_view text)
+    : m_font(font)
+    , m_text(text)
+{
+    updateSize();
+}
+
+void MultiLineText::setFont(Font *font)
+{
+    if (font == m_font)
+        return;
+    m_font = font;
+    updateSize();
+}
+
+void MultiLineText::setText(std::u32string_view text)
+{
+    if (text == m_text)
+        return;
+    m_text = text;
+    updateSize();
+}
+
+void MultiLineText::setMargins(Margins margins)
+{
+    if (margins == m_margins)
+        return;
+    m_margins = margins;
+    updateSize();
+}
+
+void MultiLineText::setFixedWidth(float width)
+{
+    if (width == m_fixedWidth)
+        return;
+    m_fixedWidth = width;
+    updateSize();
+}
+
+void MultiLineText::setFixedHeight(float height)
+{
+    if (height == m_fixedHeight)
+        return;
+    m_fixedHeight = height;
+    updateSize();
+}
+
+void MultiLineText::updateSize()
+{
+    breakTextLines();
+    m_contentWidth = 0.0f;
+    for (const auto &line : m_lines)
+        m_contentWidth = std::max(line.width, m_contentWidth);
+    m_contentHeight = m_lines.size() * m_font->pixelHeight();
+    const float height = [this] {
+        if (m_fixedHeight > 0)
+            return m_fixedHeight;
+        return m_contentHeight + m_margins.top + m_margins.bottom;
+    }();
+    setSize({m_fixedWidth, height});
+}
+
+void MultiLineText::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
+{
+    const auto availableWidth = m_size.width - (m_margins.left + m_margins.right);
+    if (availableWidth < 0.0f)
+        return;
+
+    const auto availableHeight = m_size.height - (m_margins.top + m_margins.bottom);
+    if (availableHeight < 0.0f)
+        return;
+
+    const bool clipped = availableWidth < m_contentWidth - 0.5f || availableHeight < m_contentHeight - 0.5f;
+    RectF prevClipRect;
+    if (clipped)
+    {
+        prevClipRect = painter->clipRect();
+        const auto p = pos + glm::vec2(m_margins.left, m_margins.top);
+        const auto rect = RectF{p, p + glm::vec2(availableWidth, availableHeight)};
+        painter->setClipRect(prevClipRect.intersected(rect));
+    }
+
+    const auto yOffset = [this, availableHeight] {
+        const auto vertAlignment = alignment & (Alignment::Top | Alignment::VCenter | Alignment::Bottom);
+        switch (vertAlignment)
+        {
+        case Alignment::Top:
+            return 0.0f;
+        case Alignment::VCenter:
+        default:
+            return 0.5f * (availableHeight - m_contentHeight);
+        case Alignment::Bottom:
+            return availableHeight - m_contentHeight;
+        }
+    }();
+    auto textPos = pos + glm::vec2(m_margins.left, m_margins.top) + glm::vec2(0.0f, yOffset);
+    painter->setFont(m_font);
+    for (const auto &line : m_lines)
+    {
+        const auto offset = [this, &line, availableWidth] {
+            const auto horizAlignment = alignment & (Alignment::Left | Alignment::HCenter | Alignment::Right);
+            switch (horizAlignment)
+            {
+            case Alignment::Left:
+            default:
+                return 0.0f;
+            case Alignment::HCenter:
+                return 0.5f * (availableWidth - line.width);
+            case Alignment::Right:
+                return availableWidth - line.width;
+            }
+        }();
+        painter->drawText(line.text, textPos + glm::vec2(offset, 0), color, depth + 1);
+        textPos.y += m_font->pixelHeight();
+    }
+
+    if (clipped)
+        painter->setClipRect(prevClipRect);
+}
+
+void MultiLineText::breakTextLines()
+{
+    assert(m_font);
+
+    m_lines.clear();
+
+    const float availableWidth = m_fixedWidth - (m_margins.left + m_margins.right);
+    if (availableWidth < 0.0f)
+        return;
+
+    struct Position
+    {
+        std::u32string::const_iterator it;
+        float x;
+    };
+    Position rowStart{m_text.begin(), 0.0f};
+    std::optional<Position> lastBreak;
+
+    const auto spaceWidth = m_font->glyph(' ')->advanceWidth;
+
+    const auto makeLine = [](Position start, Position end) {
+        return TextLine{std::u32string_view(start.it, end.it), end.x - start.x};
+    };
+
+    float lineWidth = 0.0f;
+    for (auto it = m_text.begin(); it != m_text.end(); ++it)
+    {
+        const auto ch = *it;
+        if (ch == ' ')
+        {
+            if (lineWidth - rowStart.x > availableWidth)
+            {
+                if (lastBreak)
+                {
+                    m_lines.push_back(makeLine(rowStart, *lastBreak));
+                    rowStart = {lastBreak->it + 1, lastBreak->x + spaceWidth};
+                    lastBreak = {it, lineWidth};
+                }
+                else
+                {
+                    m_lines.push_back(makeLine(rowStart, Position{it, lineWidth}));
+                    rowStart = {it + 1, lineWidth + spaceWidth};
+                }
+            }
+            else
+            {
+                lastBreak = {it, lineWidth};
+            }
+        }
+        lineWidth += m_font->glyph(ch)->advanceWidth;
+    }
+    if (rowStart.it != m_text.end())
+    {
+        if (lineWidth - rowStart.x > availableWidth && lastBreak)
+        {
+            m_lines.push_back(makeLine(rowStart, *lastBreak));
+            m_lines.push_back(
+                makeLine(Position{lastBreak->it + 1, lastBreak->x + spaceWidth}, Position{m_text.end(), lineWidth}));
+        }
+        else
+        {
+            m_lines.push_back(makeLine(rowStart, Position{m_text.end(), lineWidth}));
+        }
+    }
+}
+
 } // namespace miniui
