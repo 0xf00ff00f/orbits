@@ -55,13 +55,10 @@ void Texture::initialize()
 
     glTexImage2D(Target, 0, toGLInternalFormat(m_pixelType), m_width, m_height, 0, toGLFormat(m_pixelType),
                  GL_UNSIGNED_BYTE, nullptr);
-
-    m_data.resize(m_width * m_height * pixelSizeInBytes(m_pixelType), 0);
 }
 
 void Texture::setData(const unsigned char *data) const
 {
-    std::copy(data, data + m_data.size(), m_data.data());
     gpuSetData(data);
 }
 

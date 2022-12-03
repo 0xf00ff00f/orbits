@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 struct Pixmap;
 
@@ -36,7 +35,6 @@ private:
     int m_height;
     PixelType m_pixelType;
     GLuint m_id;
-    mutable std::vector<unsigned char> m_data;
 };
 
 } // namespace gl
