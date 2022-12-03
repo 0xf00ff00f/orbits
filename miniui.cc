@@ -185,7 +185,12 @@ void Label::updateSize()
 void Label::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
     const auto availableWidth = m_size.width - (m_margins.left + m_margins.right);
+    if (availableWidth < 0.0f)
+        return;
+
     const auto availableHeight = m_size.height - (m_margins.top + m_margins.bottom);
+    if (availableHeight < 0.0f)
+        return;
 
     const bool clipped = availableWidth < m_contentWidth - 0.5f || availableHeight < m_contentHeight - 0.5f;
     RectF prevClipRect;
