@@ -43,10 +43,8 @@ Game::Game()
     };
 
     {
-        auto p = std::make_unique<Image>("peppers.jpg");
-        p->setFixedHeight(100);
-        p->setFixedWidth(400);
-        p->alignment = Alignment::Right | Alignment::Bottom;
+        auto p = std::make_unique<Switch>();
+        m_switchToggledConnection = p->toggledSignal.connect([](bool checked) { log("toggled: %d\n", checked); });
         container->addItem(std::move(p));
     }
 
@@ -230,6 +228,7 @@ void Game::update(float elapsed)
     auto text = std::to_string(static_cast<int>(m_time * 10.0f));
     m_counterLabel->setText(std::u32string(text.begin(), text.end()));
 #endif
+    m_item->update(elapsed);
 }
 
 void Game::initialize()
@@ -264,8 +263,8 @@ void Game::onMouseButtonPress(miniui::MouseButtons button)
         {
             m_mouseGrabber->mouseEvent({MouseEvent::Type::DragBegin, button, pos});
         }
+        m_aboutToClick = true;
     }
-    m_aboutToClick = true;
 }
 
 void Game::onMouseButtonRelease(miniui::MouseButtons button)
@@ -274,7 +273,7 @@ void Game::onMouseButtonRelease(miniui::MouseButtons button)
     const auto pos = m_mousePosition - m_itemOffset;
     m_mouseButtons &= ~button;
     m_item->mouseEvent({MouseEvent::Type::Release, button, pos});
-    if (m_aboutToClick)
+    if (m_aboutToClick && button == miniui::MouseButtons::Left)
     {
         m_item->mouseEvent({MouseEvent::Type::Click, button, pos});
     }

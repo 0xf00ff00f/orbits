@@ -51,6 +51,8 @@ set(SOURCES
     pixmapcache.h
     signal.cc
     signal.h
+    valueanimation.h
+    tweening.h
 )
 
 add_executable(game ${SOURCES})

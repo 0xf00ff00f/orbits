@@ -12,6 +12,8 @@ class Item;
 class Label;
 } // namespace miniui
 
+class Connection;
+
 class Game : private NonCopyable
 {
 public:
@@ -46,4 +48,5 @@ private:
     miniui::Item *m_mouseGrabber = nullptr;
     bool m_aboutToClick = false;
     float m_time = 0.0f;
+    std::unique_ptr<Connection> m_switchToggledConnection;
 };

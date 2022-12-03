@@ -4,6 +4,8 @@
 #include "font.h"
 #include "signal.h"
 #include "mouseevent.h"
+#include "tweening.h"
+#include "valueanimation.h"
 
 #include <glm/glm.hpp>
 
@@ -85,6 +87,7 @@ public:
 
     virtual bool mouseEvent(const MouseEvent &event);
     virtual Item *findGrabbableItem(const glm::vec2 &pos);
+    virtual void update(float elapsed);
 
     enum class Shape
     {
@@ -217,6 +220,7 @@ public:
     float spacing() const { return m_spacing; }
 
 protected:
+    void update(float elapsed) override;
     virtual void updateLayout() = 0;
 
     void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
@@ -231,7 +235,7 @@ protected:
     float m_spacing = 0.0f;
 
 private:
-    std::vector<std::unique_ptr<Connection>> m_childResizedConnections;
+    std::vector<ConnectionPtr> m_childResizedConnections;
 };
 
 class Column : public Container
@@ -274,6 +278,7 @@ public:
     Size viewportSize() const;
 
 protected:
+    void update(float elapsed) override;
     void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
 private:
@@ -304,9 +309,13 @@ public:
     ToggledSignal toggledSignal;
 
 protected:
+    void update(float elapsed) override;
     void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
 
     bool m_checked = false;
+    ValueAnimation<tweening::InQuadratic<float>, float> m_animation;
+    ConnectionPtr m_animationConn;
+    float m_indicatorPosition;
 };
 
 } // namespace miniui

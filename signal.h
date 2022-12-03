@@ -25,6 +25,8 @@ private:
     SignalBase *m_event;
 };
 
+using ConnectionPtr = std::unique_ptr<Connection>;
+
 template<typename HandlerType>
 class Signal : public SignalBase
 {

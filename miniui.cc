@@ -24,6 +24,8 @@ Font *defaultFont()
 
 Item::~Item() = default;
 
+void Item::update(float) {}
+
 void Item::renderBackground(Painter *painter, const glm::vec2 &pos, int depth)
 {
     if (!fillBackground)
@@ -348,6 +350,12 @@ void Image::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
     }
 }
 
+void Container::update(float elapsed)
+{
+    for (auto &layoutItem : m_layoutItems)
+        layoutItem->item->update(elapsed);
+}
+
 Item *Container::findGrabbableItem(const glm::vec2 &pos)
 {
     if (!rect().contains(pos))
@@ -524,6 +532,11 @@ ScrollArea::ScrollArea(std::unique_ptr<Item> contentItem)
 {
 }
 
+void ScrollArea::update(float elapsed)
+{
+    m_contentItem->update(elapsed);
+}
+
 void ScrollArea::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
     const auto viewportPos = pos + glm::vec2(m_margins.left, m_margins.top);
@@ -603,6 +616,9 @@ Switch::Switch()
     fillBackground = true;
     shape = Shape::Capsule;
     backgroundColor = glm::vec4(0, 0, 0, 1);
+
+    m_animationConn = m_animation.valueChangedSignal.connect([this](float value) { m_indicatorPosition = value; });
+    m_animation.duration = 0.2f;
 }
 
 bool Switch::mouseEvent(const MouseEvent &event)
@@ -625,14 +641,32 @@ void Switch::setChecked(bool checked)
     if (checked == m_checked)
         return;
     m_checked = checked;
+
+    if (m_checked)
+    {
+        m_animation.startValue = 0.0f;
+        m_animation.endValue = 1.0f;
+    }
+    else
+    {
+        m_animation.startValue = 1.0f;
+        m_animation.endValue = 0.0f;
+    }
+    m_animation.start();
     toggledSignal.notify(checked);
+}
+
+void Switch::update(float elapsed)
+{
+    m_animation.update(elapsed);
 }
 
 void Switch::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
 {
     const float radius = 0.5f * m_size.height;
     const float indicatorRadius = 0.75f * radius;
-    const auto center = pos + glm::vec2(m_checked ? m_size.width - radius : radius, 0.5f * m_size.height);
+    const float centerX = radius + m_indicatorPosition * (m_size.width - 2 * radius);
+    const auto center = pos + glm::vec2(centerX, 0.5f * m_size.height);
     painter->drawCircle(center, indicatorRadius, indicatorColor, depth + 1);
 }
 
