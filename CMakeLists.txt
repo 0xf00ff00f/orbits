@@ -53,6 +53,8 @@ set(SOURCES
     signal.h
     valueanimation.h
     tweening.h
+    framebuffer.cc
+    framebuffer.h
 )
 
 add_executable(game ${SOURCES})

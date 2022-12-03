@@ -27,6 +27,8 @@ public:
 
     void bind() const override;
 
+    GLuint id() const { return m_id; }
+
 private:
     void initialize();
     void gpuSetData(const unsigned char *data) const;
