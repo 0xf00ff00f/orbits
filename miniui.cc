@@ -1,5 +1,7 @@
 #include "miniui.h"
 
+#include "glm/detail/qualifier.hpp"
+#include "glm/fwd.hpp"
 #include "system.h"
 #include "painter.h"
 #include "fontcache.h"
@@ -31,6 +33,9 @@ void Item::renderBackground(Painter *painter, const glm::vec2 &pos, int depth)
     {
     case Shape::Rectangle:
         painter->drawRect(rect, backgroundColor, depth);
+        break;
+    case Shape::Capsule:
+        painter->drawCapsule(rect, backgroundColor, depth);
         break;
     case Shape::RoundedRectangle:
         painter->drawRoundedRect(rect, cornerRadius, backgroundColor, depth);
@@ -590,4 +595,45 @@ void ScrollArea::updateSize()
     float width = m_viewportSize.width + m_margins.left + m_margins.right;
     setSize({width, height});
 }
+
+Switch::Switch()
+{
+    m_size = Size{80, 32};
+
+    fillBackground = true;
+    shape = Shape::Capsule;
+    backgroundColor = glm::vec4(0, 0, 0, 1);
+}
+
+bool Switch::mouseEvent(const MouseEvent &event)
+{
+    if (event.type == MouseEvent::Type::Click)
+    {
+        toggle();
+        return true;
+    }
+    return Item::mouseEvent(event);
+}
+
+void Switch::toggle()
+{
+    setChecked(!m_checked);
+}
+
+void Switch::setChecked(bool checked)
+{
+    if (checked == m_checked)
+        return;
+    m_checked = checked;
+    toggledSignal.notify(checked);
+}
+
+void Switch::renderContents(Painter *painter, const glm::vec2 &pos, int depth)
+{
+    const float radius = 0.5f * m_size.height;
+    const float indicatorRadius = 0.75f * radius;
+    const auto center = pos + glm::vec2(m_checked ? m_size.width - radius : radius, 0.5f * m_size.height);
+    painter->drawCircle(center, indicatorRadius, indicatorColor, depth + 1);
+}
+
 } // namespace miniui

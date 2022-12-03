@@ -74,8 +74,6 @@ struct Size
 class Item
 {
 public:
-    using ResizedSignal = Signal<std::function<void(Size)>>;
-
     virtual ~Item();
 
     Size size() const { return m_size; }
@@ -91,7 +89,8 @@ public:
     enum class Shape
     {
         Rectangle,
-        RoundedRectangle
+        Capsule,
+        RoundedRectangle,
     };
     Shape shape = Shape::Rectangle;
     bool fillBackground = false;
@@ -99,6 +98,7 @@ public:
     float cornerRadius = 0.0f;
     Alignment containerAlignment = Alignment::VCenter | Alignment::Left;
 
+    using ResizedSignal = Signal<std::function<void(Size)>>;
     ResizedSignal resizedSignal;
 
 protected:
@@ -286,4 +286,27 @@ private:
     bool m_dragging = false;
     glm::vec2 m_mousePressPos;
 };
+
+class Switch : public Item
+{
+public:
+    Switch();
+
+    bool mouseEvent(const MouseEvent &event) override;
+
+    void setChecked(bool checked);
+    bool isChecked() { return m_checked; }
+    void toggle();
+
+    glm::vec4 indicatorColor = glm::vec4(1, 1, 1, 1);
+
+    using ToggledSignal = Signal<std::function<void(bool)>>;
+    ToggledSignal toggledSignal;
+
+protected:
+    void renderContents(Painter *painter, const glm::vec2 &pos, int depth = 0) override;
+
+    bool m_checked = false;
+};
+
 } // namespace miniui

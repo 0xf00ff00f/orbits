@@ -124,8 +124,8 @@ void Painter::drawText(std::u32string_view text, const glm::vec2 &pos, const glm
 
 void Painter::drawCircle(const glm::vec2 &center, float radius, const glm::vec4 &color, int depth)
 {
-    const auto topLeft = center - 0.5f * glm::vec2(radius, radius);
-    const auto bottomRight = center + 0.5f * glm::vec2(radius, radius);
+    const auto topLeft = center - glm::vec2(radius, radius);
+    const auto bottomRight = center + glm::vec2(radius, radius);
     const auto rect = RectF{topLeft, bottomRight};
     if (m_clipRect.intersects(rect))
     {
